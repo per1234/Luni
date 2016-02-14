@@ -1,0 +1,53 @@
+Searching 1 file for "inline" (case sensitive)
+
+E:\users\finson\repos\Arduino-1\hardware\arduino\avr\libraries\SPI\SPI.h:
+   89:     __attribute__((__always_inline__)) {
+  178:   inline static void beginTransaction(SPISettings settings) {
+  208:   inline static uint8_t transfer(uint8_t data) {
+  220:   inline static uint16_t transfer16(uint16_t data) {
+  244:   inline static void transfer(void *buf, size_t count) {
+  260:   inline static void endTransaction(void) {
+  291:   inline static void setBitOrder(uint8_t bitOrder) {
+  297:   inline static void setDataMode(uint8_t dataMode) {
+  302:   inline static void setClockDivider(uint8_t clockDiv) {
+  309:   inline static void attachInterrupt() { SPCR |= _BV(SPIE); }
+  310:   inline static void detachInterrupt() { SPCR &= ~_BV(SPIE); }
+
+11 matches in 1 file
+
+Searching 1 file for ");" (case sensitive)
+
+E:\users\finson\repos\Arduino-1\hardware\arduino\avr\libraries\Wire\Wire.h:
+   46:     static void (*user_onRequest)(void);
+   47:     static void (*user_onReceive)(int);
+   48:     static void onRequestService(void);
+   49:     static void onReceiveService(uint8_t*, int);
+   51:     TwoWire();
+   52:     void begin();
+   53:     void begin(uint8_t);
+   54:     void begin(int);
+   55:     void end();
+   56:     void setClock(uint32_t);
+   57:     void beginTransmission(uint8_t);
+   58:     void beginTransmission(int);
+   59:     uint8_t endTransmission(void);
+   60:     uint8_t endTransmission(uint8_t);
+   61:     uint8_t requestFrom(uint8_t, uint8_t);
+   62:     uint8_t requestFrom(uint8_t, uint8_t, uint8_t);
+   63: 	uint8_t requestFrom(uint8_t, uint8_t, uint32_t, uint8_t, uint8_t);
+   64:     uint8_t requestFrom(int, int);
+   65:     uint8_t requestFrom(int, int, int);
+   66:     virtual size_t write(uint8_t);
+   67:     virtual size_t write(const uint8_t *, size_t);
+   68:     virtual int available(void);
+   69:     virtual int read(void);
+   70:     virtual int peek(void);
+   71:     virtual void flush(void);
+   72:     void onReceive( void (*)(int) );
+   73:     void onRequest( void (*)(void) );
+   75:     inline size_t write(unsigned long n) { return write((uint8_t)n); }
+   76:     inline size_t write(long n) { return write((uint8_t)n); }
+   77:     inline size_t write(unsigned int n) { return write((uint8_t)n); }
+   78:     inline size_t write(int n) { return write((uint8_t)n); }
+
+31 matches in 1 file
