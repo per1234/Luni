@@ -1,4 +1,4 @@
-#include <FirmataDeviceLibrary.h>
+#include <LuniLib.h>
 #include <Device/DeviceTable.h>
 #include <Framework/Logger.h>
 #include <Framework/Tester.h>
@@ -120,11 +120,11 @@ void setup() {
       if (status < 0) continue;
 
       switch (r) {
-        
+
         case static_cast<int>(HelloRegister::INTERJECTION):
           logger->debug("Interjection byte count:", status);
           break;
-          
+
         case static_cast<int>(HelloRegister::OBJECT):
           logger->debug("Object byte count:", status);
           break;

@@ -1,4 +1,4 @@
-#include <FirmataDeviceLibrary.h>
+#include <LuniLib.h>
 #include <Framework/Logger.h>
 #include <Framework/Tester.h>
 #include <Framework/ByteOrder.h>
