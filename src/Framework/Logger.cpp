@@ -1,17 +1,17 @@
 #include "Logger.h"
 
-Logger::Logger(char *name) {
+Logger::Logger(const char *name) {
   loggerName = strdup(name);
   currentLogLevel = LogLevel::OFF;
 }
 
 Logger::~Logger() {
   if (loggerName != 0) {
-    free(loggerName);
+    free((void*)loggerName);
   }
 }
 
-char *Logger::getLoggerName(){
+const char *Logger::getLoggerName(){
   return loggerName;
   }
 

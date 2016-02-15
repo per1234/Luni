@@ -23,7 +23,7 @@ void DeviceDriver::report(unsigned long deltaMillis) {
 int DeviceDriver::open(const char *name, int flags) {
   int lun;
 
-  int unitNameLength = strcspn(name,":");
+  size_t unitNameLength = strcspn(name,":");
   if ((strlen(rootName) != unitNameLength) || (strncmp(rootName,name,unitNameLength) != 0)) {
     return ENODEV;
   }

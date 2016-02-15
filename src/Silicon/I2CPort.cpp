@@ -7,7 +7,9 @@ I2CPort::I2CPort() {
 }
 
 I2CPort::~I2CPort() {
+#ifdef WIRE_HAS_END
   Wire.end();
+#endif
 }
 
 //----------------------------------------------------------------------------

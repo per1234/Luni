@@ -15,8 +15,8 @@ DEFINE_SEMVER(MCP9808Driver, 0, 1, 0)
  */
 MCP9808Driver::MCP9808Driver(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
-  i2c(),
-  baseAddress(baseI2CAddress) {}
+  baseAddress(baseI2CAddress),
+  i2c() {}
 
 //---------------------------------------------------------------------------
 

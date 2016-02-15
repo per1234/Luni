@@ -23,8 +23,18 @@ DEFINE_SEMVER(DeviceTable, 0, 1, 0)
  */
 DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
 
-  bool enableTableDriver = (luRootName != 0);
+  previousTime[0] = 0;
+  previousTime[1] = 0;
+  intervalTime[0] = DEFAULT_REPORT_INTERVAL;
+  intervalTime[1] = DEFAULT_UPDATE_INTERVAL;
+
   deviceCount = 0;
+  if (deviceArray == 0) {
+    devices = 0;
+    return;
+  }
+
+  bool enableTableDriver = (luRootName != 0);
   while (deviceArray[deviceCount] != 0) {
     deviceCount += 1;
   }
@@ -33,10 +43,12 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
   devices = new DeviceDriver*[deviceCount];
   if (devices == 0) {
     deviceCount = 0;
+    return;
   } else {
     int idx = 0;
     while (deviceArray[idx] != 0) {
-      devices[idx] = deviceArray[idx++];
+      devices[idx] = deviceArray[idx];
+      idx += 1;
     }
 
     if (enableTableDriver) {
@@ -49,11 +61,6 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
       }
     }
   }
-
-  previousTime[0] = 0;
-  previousTime[1] = 0;
-  intervalTime[0] = DEFAULT_REPORT_INTERVAL;
-  intervalTime[1] = DEFAULT_UPDATE_INTERVAL;
 }
 
 DeviceTable::~DeviceTable() {}

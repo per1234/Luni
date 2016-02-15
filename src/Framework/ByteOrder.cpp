@@ -1,5 +1,14 @@
-
 #include "ByteOrder.h"
+
+// define lowByte and highByte so that we don't have to include Arduino.h
+
+#ifndef lowByte
+#define lowByte(w) ((uint8_t) ((w) & 0xff))
+#endif
+
+#ifndef highByte
+#define highByte(w) ((uint8_t) ((w) >> 8))
+#endif
 
 void ByteOrder::x1LE(uint8_t src, uint8_t *dst) {
   dst[0] = lowByte(src);

@@ -3,16 +3,6 @@
 
 #include <stdint.h>
 
-// define lowByte and highByte so that we don't have to include Arduino.h
-
-#ifndef lowByte
-#define lowByte(w) ((uint8_t) ((w) & 0xff))
-#endif
-
-#ifndef highByte
-#define highByte(w) ((uint8_t) ((w) >> 8))
-#endif
-
 // Extract and pack uintNN values using consecutive source address pointers
 
 // Arguments addressOfBytesToPack and addressOfExtractedBytes are both type uint8_t*.

@@ -15,6 +15,7 @@ HelloDriver::HelloDriver(const char *dName, int count) :
 //---------------------------------------------------------------------------
 
 int HelloDriver::open(const char *name, int flags) {
+
   int lun;
   int status = DeviceDriver::open(name,flags);
   if (status < 0) {
@@ -80,8 +81,9 @@ int HelloDriver::control(int handle, int reg, int count, byte *buf) {
 int HelloDriver::read(int handle, int count, byte *buf) {
   HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[handle & 0x7F]);
   if (currentUnit == 0) return ENOTCONN;
+  if (count < 0) return EMSGSIZE;
 
-  if (count >= (strlen(currentUnit->getWho())+strlen(currentUnit->getWhat())+4)) {
+  if ((size_t)count >= (strlen(currentUnit->getWho())+strlen(currentUnit->getWhat())+4)) {
     buf[0] = (uint8_t)'\0';
     strcat((char *)buf,currentUnit->getWhat());
     strcat((char *)buf,", ");

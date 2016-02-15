@@ -9,7 +9,7 @@
 
 class Logger {
 public:
-  Logger(char *name);
+  Logger(const char *name);
   ~Logger();
 
   template <typename... ItemType>
@@ -30,13 +30,13 @@ public:
   template <typename... ItemType>
   void trace(const char *msg, ItemType ...valPack);
 
-  char *getLoggerName();
+  const char *getLoggerName();
   int getCurrentLogLevel();
   void setCurrentLogLevel(int newLevel);
   bool isEnabled(int lvl);
 
 private:
-  char *loggerName;
+  const char *loggerName;
   int currentLogLevel;
 
 

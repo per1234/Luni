@@ -31,8 +31,8 @@ private:
 
   Logger *logger;
 
-  char *theTestName;
-  char *theGroupName;
+  const char *theTestName;
+  const char *theGroupName;
 
   int testFailureCount;
   int groupFailureCount;

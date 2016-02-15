@@ -9,10 +9,10 @@ Tester::Tester() {
 
 Tester::~Tester() {
   if (theGroupName != 0) {
-    free(theGroupName);
+    free((void*)theGroupName);
   }
   if (theTestName !=0) {
-    free(theTestName);
+    free((void*)theTestName);
   }
   if (logger != 0) {
     free(logger);
