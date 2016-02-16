@@ -105,6 +105,7 @@ int DeviceTable::close(int handle) {
 
 void DeviceTable::dispatchTimers() {
   unsigned long elapsedTime;
+  int status;
 
   currentTime[0] = micros();
   currentTime[1] = millis();
@@ -119,11 +120,11 @@ void DeviceTable::dispatchTimers() {
     if (elapsedTime >= intervalTime[idx]) {
       if (idx == 0) {
         for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          devices[deviceIndex]->update(elapsedTime);
+          status = devices[deviceIndex]->update(elapsedTime);
         }
       } else {
         for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          devices[deviceIndex]->report(elapsedTime);
+          status = devices[deviceIndex]->report(elapsedTime);
         }
       }
       previousTime[idx] = currentTime[idx];

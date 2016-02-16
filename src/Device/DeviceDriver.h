@@ -48,7 +48,7 @@ public:
      * @param deltaMicros Length, in microseconds, of the interval since the last call to this
      * method.
      */
-    virtual void update(unsigned long deltaMicros);
+    virtual int update(unsigned long deltaMicros);
 
     /**
      * Called repeatedly by the application program at the expiration of a
@@ -56,7 +56,7 @@ public:
      * other lower frequency tasks.
      * @param deltaMillis Length, in milliseconds, of the interval since the last call to this method.
      */
-    virtual void report(unsigned long deltaMillis);
+    virtual int report(unsigned long deltaMillis);
 
 protected:
     const char *rootName;

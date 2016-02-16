@@ -75,8 +75,8 @@ int PeekDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
-void PeekDriver::update(unsigned long deltaMicros) {
-
+int PeekDriver::update(unsigned long deltaMicros) {
+  return ENODATA;
 }
 
 //---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ void PeekDriver::update(unsigned long deltaMicros) {
 // Collect a millisecond interval (report()) duration sample.  The sample array
 // is actually 0..SAMPLE_COUNT, and the useful samples are in 1..SAMPLE_COUNT.
 
-void PeekDriver::report(unsigned long deltaMillis) {
+int PeekDriver::report(unsigned long deltaMillis) {
   currentTime[1] = millis();
 
   unsigned long elapsedTime;
@@ -99,6 +99,8 @@ void PeekDriver::report(unsigned long deltaMillis) {
   isSampleBufferFull |= (sampleIndex == SAMPLE_COUNT);
   sampleIndex = 1 + ((sampleIndex) % SAMPLE_COUNT);
   previousTime[1] = currentTime[1];
+
+  return ENODATA;
 }
 
 //---------------------------------------------------------------------------

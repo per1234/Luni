@@ -25,8 +25,8 @@ public:
     int write(int handle, int count, byte *buf);
     int close(int handle);
 
-    void report(unsigned long milliDelta);
-    void update(unsigned long microDelta);
+    int report(unsigned long milliDelta);
+    int update(unsigned long microDelta);
 
 private:
     DECLARE_SEMVER
