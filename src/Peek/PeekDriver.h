@@ -31,12 +31,12 @@ public:
 private:
     DECLARE_SEMVER
 
-    int statusCDR_Debug(int handle, int reg, int count, byte *buf);
+    int statusARI(int handle, int reg, int count, byte *buf);
 
     unsigned long calculateAverageInterval();
 
     unsigned long previousTime[2];   // the time the last interval expired
-    unsigned long currentTime[2];    // the current values from millis() and micros()
+    unsigned long currentTime[2];    // the current values from micros() and millis()
     unsigned long samples[SAMPLE_COUNT+1];
     int sampleIndex;
     bool isSampleBufferFull;

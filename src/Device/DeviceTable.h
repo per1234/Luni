@@ -29,8 +29,6 @@ public:
     int close(int handle);
 
     void dispatchTimers();
-    void update(unsigned long deltaMicros);
-    void report(unsigned long deltaMillis);
 
 private:
     DECLARE_SEMVER

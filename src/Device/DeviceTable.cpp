@@ -25,8 +25,8 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
 
   previousTime[0] = 0;
   previousTime[1] = 0;
-  intervalTime[0] = DEFAULT_REPORT_INTERVAL;
-  intervalTime[1] = DEFAULT_UPDATE_INTERVAL;
+  intervalTime[0] = DEFAULT_UPDATE_INTERVAL;
+  intervalTime[1] = DEFAULT_REPORT_INTERVAL;
 
   deviceCount = 0;
   if (deviceArray == 0) {
@@ -103,18 +103,6 @@ int DeviceTable::close(int handle) {
 
 //----------------------------------------------------------------------------
 
-void DeviceTable::update(unsigned long deltaMicros) {
-  for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-    devices[deviceIndex]->update(deltaMicros);
-  }
-}
-
-void DeviceTable::report(unsigned long deltaMillis) {
-  for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-    devices[deviceIndex]->report(deltaMillis);
-  }
-}
-
 void DeviceTable::dispatchTimers() {
   unsigned long elapsedTime;
 
@@ -130,9 +118,13 @@ void DeviceTable::dispatchTimers() {
 
     if (elapsedTime >= intervalTime[idx]) {
       if (idx == 0) {
-        update(elapsedTime);
+        for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
+          devices[deviceIndex]->update(elapsedTime);
+        }
       } else {
-        report(elapsedTime);
+        for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
+          devices[deviceIndex]->report(elapsedTime);
+        }
       }
       previousTime[idx] = currentTime[idx];
     }

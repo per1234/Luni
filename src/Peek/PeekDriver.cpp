@@ -45,12 +45,13 @@ int PeekDriver::status(int handle, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
+
   case static_cast<int>(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
       preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CDR::Debug):
-    return statusCDR_Debug(handle, reg, count, buf);
+  case static_cast<int>(PeekRegister::AVG_REPORT_INTERVAL):
+    return statusARI(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -84,26 +85,26 @@ void PeekDriver::update(unsigned long deltaMicros) {
 // is actually 0..SAMPLE_COUNT, and the useful samples are in 1..SAMPLE_COUNT.
 
 void PeekDriver::report(unsigned long deltaMillis) {
-  currentTime[0] = millis();
+  currentTime[1] = millis();
 
   unsigned long elapsedTime;
 
-  if (currentTime[0] >= previousTime[0]) {
-    elapsedTime = currentTime[0] - previousTime[0];
+  if (currentTime[1] >= previousTime[1]) {
+    elapsedTime = currentTime[1] - previousTime[1];
   } else {
-    elapsedTime = (ULONG_MAX - (previousTime[0] - currentTime[0])) + 1;
+    elapsedTime = (ULONG_MAX - (previousTime[1] - currentTime[1])) + 1;
   }
 
   samples[sampleIndex] = elapsedTime;
   isSampleBufferFull |= (sampleIndex == SAMPLE_COUNT);
   sampleIndex = 1 + ((sampleIndex) % SAMPLE_COUNT);
-  previousTime[0] = currentTime[0];
+  previousTime[1] = currentTime[1];
 }
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::statusCDR_Debug(int handle, int reg, int count, byte *buf) {
-  if (count != 4) {
+int PeekDriver::statusARI(int handle, int reg, int count, byte *buf) {
+  if (count < 4) {
     return EMSGSIZE;
   } else if (isSampleBufferFull) {
     unsigned long avg = calculateAverageInterval();
