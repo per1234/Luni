@@ -10,7 +10,7 @@
 byte buf[BUF_SIZE];
 char names[BUF_SIZE];
 int handle;
-int vReg[] = {static_cast<int>(CDR::DriverVersion), static_cast<int>(CDR::LibraryVersion)};
+int vReg[] = {static_cast<int>(CSR::DriverVersion), static_cast<int>(CSR::LibraryVersion)};
 
 DeviceTable dt(selectedDevices);
 

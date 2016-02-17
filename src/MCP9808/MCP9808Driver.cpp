@@ -57,11 +57,11 @@ int MCP9808Driver::status(int handle, int reg, int count, byte *buf) {
   int address = currentUnit->getI2CAddress();
 
   switch (reg) {
-  case static_cast<int>(CDR::DriverVersion):
+  case static_cast<int>(CSR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
       preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CDR::Debug):
+  case static_cast<int>(CSR::Debug):
     return statusCDR_Debug(handle, reg, count, buf);
 
   case static_cast<int>(MCP9808Register::CONFIG):

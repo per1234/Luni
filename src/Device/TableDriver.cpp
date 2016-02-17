@@ -42,7 +42,7 @@ int TableDriver::status(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CDR::DriverVersion):
+  case static_cast<int>(CSR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName, preReleaseLabel, buildLabel, count, buf);
 
   default:
@@ -77,7 +77,7 @@ int TableDriver::read(int handle, int count, byte * buf) {
 
   // for (int deviceIndex = 0; deviceIndex < theDeviceTable->deviceCount; deviceIndex++) {
   //   DeviceDriver *dd = theDeviceTable->devices[deviceIndex];
-  //   int regV = static_cast<int>(CDR::DriverVersion);
+  //   int regV = static_cast<int>(CSR::DriverVersion);
   //   dd->status(127,regV,count,buf);
   // }
   // return count;

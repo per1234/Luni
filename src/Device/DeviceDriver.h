@@ -14,15 +14,19 @@
 
 #define DDO_FORCE_OPEN 0x01
 
-// These are the Common Device Register codes used by the DeviceDrivers in
-// their status() and control() methods.  Register names specific to a
-// particular device type are defined by the individual DeviceDrivers.
+// These are the common register codes used by the DeviceDrivers in
+// their status() (CSR) and control() (CCR) methods.  Register names specific
+// to a particular device type are defined by the individual DeviceDrivers.
 
-enum class CDR : int {
+enum class CSR : int {
     DriverVersion   = -1,   /* Get driver name and version */
     LibraryVersion  = -2,   /* Get library name and version */
-    Reset           = -3,   /* Reset all state in the device driver */
-    Configure       = -4,   /* Configure a logical unit number instance */
+    Debug           = -256  /* Do something helpful for debugging ... */
+};
+
+enum class CCR : int {
+    Reset           = -1,   /* Reset all state in the device driver */
+    Configure       = -2,   /* Configure a logical unit number instance */
     Debug           = -256  /* Do something helpful for debugging ... */
 };
 

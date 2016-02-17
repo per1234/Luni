@@ -40,7 +40,7 @@ int HelloDriver::status(int handle, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-  case static_cast<int>(CDR::DriverVersion):
+  case static_cast<int>(CSR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
       preReleaseLabel, buildLabel, count, buf);
 
