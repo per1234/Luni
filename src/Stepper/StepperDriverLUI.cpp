@@ -2,4 +2,8 @@
 
 StepperDriverLUI::StepperDriverLUI() : LogicalUnitInfo() { }
 
-~StepperDriverLUI() {}
+StepperDriverLUI::~StepperDriverLUI() {}
+
+AsyncStepper *StepperDriverLUI::getDeviceObject() {
+  return &motor;
+}

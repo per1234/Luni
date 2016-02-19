@@ -7,6 +7,12 @@ public:
 
     StepperDriverLUI();
     ~StepperDriverLUI();
+
+    AsyncStepper *getDeviceObject();
+
+private:
+
+    AsyncStepper motor;
 };
 
 #endif
