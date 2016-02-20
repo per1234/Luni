@@ -28,7 +28,7 @@ public:
     int write(int handle, int count, byte *buf);
     int close(int handle);
 
-    void dispatchTimers();
+    void dispatchTimers(reporter object);
 
 private:
     DECLARE_SEMVER
