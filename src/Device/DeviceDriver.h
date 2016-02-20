@@ -10,6 +10,11 @@
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"
 
+// Extract 7-bit index values from a 14-bit handle
+
+#define getUnitHandle(handle) ((handle) & 0x7F)
+#define getDeviceHandle(handle) (((handle) >> 7) & 0x7F)
+
 // Open() flags
 
 #define DDO_FORCE_OPEN 0x01

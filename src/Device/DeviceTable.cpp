@@ -3,11 +3,6 @@
 
 DEFINE_SEMVER(DeviceTable, 0, 1, 0)
 
-// Extract 7-bit index values from a 14-bit handle
-
-#define getUnitHandle(handle) ((handle) & 0x7F)
-#define getDeviceHandle(handle) (((handle) >> 7) & 0x7F)
-
 /**
  * This DeviceTable class provides single point access to all the loaded
  * DeviceDriver objects.  The open() method is used to identify the driver of
