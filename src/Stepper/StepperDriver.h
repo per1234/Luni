@@ -26,8 +26,8 @@ public:
   virtual int write(int handle, int count, byte *buf);
   virtual int close(int handle);
 
-  int millisecondTimeBase();
-  int microsecondTimeBase();
+  int microsecondTimeBase();  // update()
+  int millisecondTimeBase();  // report()
 
 private:
   DECLARE_SEMVER
@@ -37,17 +37,5 @@ private:
   int controlSTP_RPMSpeed(int handle, int reg, int count, byte *buf);
 
 };
-
-    // void setRPMSpeed(int s);
-    // void setRPMAccelerations(int a, int d);
-
-    // int getRPMSpeed();
-    // int getRPMAcceleration();
-    // int getRPMDeceleration();
-    //
-// private:
-//     int theSpeed;
-//     int theAcceleration;
-//     int theDeceleration;
 
 #endif
