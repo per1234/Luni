@@ -11,11 +11,11 @@ logicalUnits(new LogicalUnitInfo*[count]())
 //---------------------------------------------------------------------------
 
 int DeviceDriver::update(unsigned long deltaMicros) {
-  return ENODATA;
+  return ESUCCESS;
 }
 
 int DeviceDriver::report(unsigned long deltaMillis) {
-  return ENODATA;
+  return ESUCCESS;
 }
 
 //---------------------------------------------------------------------------
