@@ -204,7 +204,7 @@ or
 
 ####Status / Return Value from Methods
 
-Each of the device driver methods returns an `int` value to the caller.  The meaning of the returned `int` varies depending on the method called.  Handles, byte counts, and error status returns are all handled by Firmata the same way.  Handle values and byte counts are always positive, to distinguish them from error return values.
+Each of the device driver methods returns an `int` value to the caller.  The meaning of the returned `int` varies depending on the method called.  Handles, byte counts, and error status returns are all handled by Firmata the same way.  Handle values and byte counts are always non-negative, to distinguish them from error return values.
 
 For transmission by Firmata, the `int` being returned is considered to be a 14-bit signed integer.  The low-order 7 bits are put in the LSB, and bit 7 is set to 0.  The higher-order 6 bits and the sign bit are put in the MSB, and bit 7 is set to 0.  The resulting two bytes are stored in the header at offsets 6 and 7.  The value is reassembled and sign extended by Firmata on the client side before passing it back to the original caller.  
 
