@@ -1,5 +1,6 @@
 #include "DeviceTable.h"
 #include "TableDriver.h"
+#include "ClientReporter.h"
 
 DEFINE_SEMVER(DeviceTable, 0, 1, 0)
 
@@ -43,6 +44,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
     int idx = 0;
     while (deviceArray[idx] != 0) {
       devices[idx] = deviceArray[idx];
+      devices[idx]->setDeviceIndex(idx);
       idx += 1;
     }
 
@@ -53,12 +55,16 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
         deviceCount = 0;
       } else {
         devices[idx] = metaDriver;
+        devices[idx]->setDeviceIndex(idx);
       }
     }
   }
 }
 
 DeviceTable::~DeviceTable() {}
+
+void DeviceTable::reset() {
+}
 
 //---------------------------------------------------------------------------
 
@@ -73,7 +79,12 @@ int DeviceTable::open(const char *name, int flags) {
       break;
     }
   }
-  return (status < 0) ? status : ((deviceIndex & 0x7F) << 7) | (status & 0x7F);
+  if (status >= 0) {
+    int handle =  ((deviceIndex & 0x7F) << 7) | (status & 0x7F);
+    return handle;
+  } else {
+    return status;
+  }
 }
 
 int DeviceTable::control(int handle, int reg, int count, byte *buf) {
@@ -98,7 +109,7 @@ int DeviceTable::close(int handle) {
 
 //----------------------------------------------------------------------------
 
-void DeviceTable::dispatchTimers() {
+void DeviceTable::dispatchTimers(ClientReporter *reporter) {
   unsigned long elapsedTime;
   int status;
 
@@ -115,11 +126,11 @@ void DeviceTable::dispatchTimers() {
     if (elapsedTime >= intervalTime[idx]) {
       if (idx == 0) {
         for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          status = devices[deviceIndex]->update(elapsedTime);
+          status = devices[deviceIndex]->microTimer(elapsedTime, reporter);
         }
       } else {
         for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          status = devices[deviceIndex]->report(elapsedTime);
+          status = devices[deviceIndex]->milliTimer(elapsedTime, reporter);
         }
       }
       previousTime[idx] = currentTime[idx];

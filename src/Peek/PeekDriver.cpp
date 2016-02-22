@@ -75,8 +75,8 @@ int PeekDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::update(unsigned long deltaMicros) {
-  return ENODATA;
+int PeekDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
+  return ESUCCESS;
 }
 
 //---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ int PeekDriver::update(unsigned long deltaMicros) {
 // Collect a millisecond interval (report()) duration sample.  The sample array
 // is actually 0..SAMPLE_COUNT, and the useful samples are in 1..SAMPLE_COUNT.
 
-int PeekDriver::report(unsigned long deltaMillis) {
+int PeekDriver::milliTimer(unsigned long deltaMillis, ClientReporter *r) {
   currentTime[1] = millis();
 
   unsigned long elapsedTime;
@@ -100,7 +100,7 @@ int PeekDriver::report(unsigned long deltaMillis) {
   sampleIndex = 1 + ((sampleIndex) % SAMPLE_COUNT);
   previousTime[1] = currentTime[1];
 
-  return ENODATA;
+  return ESUCCESS;
 }
 
 //---------------------------------------------------------------------------

@@ -4,8 +4,8 @@
 class LogicalUnitInfo {
 
 public:
-  LogicalUnitInfo() {}
-  virtual ~LogicalUnitInfo() {}
+  LogicalUnitInfo();
+  virtual ~LogicalUnitInfo();
 
 };
 

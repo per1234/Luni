@@ -7,6 +7,7 @@
 
 #include <Framework/ByteOrder.h>
 #include <Framework/SemVer.h>
+#include "ClientReporter.h"
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"
 
@@ -50,25 +51,28 @@ public:
     virtual int write(int handle, int count, byte *buf) = 0;
     virtual int close(int handle) = 0;
 
+    void setDeviceIndex(int idx);
+
+
     /**
-     * Called repeatedly by the application program at the expiration of a
-     * microsecond based interval to perform real time updates of position and
-     * control.
+     * Called at the expiration of a microsecond based interval to perform
+     * real time updates of position and control.
      * @param deltaMicros Length, in microseconds, of the interval since the last call to this
      * method.
      */
-    virtual int update(unsigned long deltaMicros);
+    virtual int microTimer(unsigned long deltaMicros, ClientReporter *r);
 
     /**
-     * Called repeatedly by the application program at the expiration of a
-     * millisecond based interval to provide an opportunity for reporting and
-     * other lower frequency tasks.
+     * Called at the expiration of a millisecond based interval to provide
+     * an opportunity for reporting and other lower frequency tasks.
      * @param deltaMillis Length, in milliseconds, of the interval since the last call to this method.
      */
-    virtual int report(unsigned long deltaMillis);
+    virtual int milliTimer(unsigned long deltaMillis, ClientReporter *r);
 
 protected:
     const char *rootName;
+
+    int deviceIndex;        // the major handle value, ie index in the DeviceTable
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;
 

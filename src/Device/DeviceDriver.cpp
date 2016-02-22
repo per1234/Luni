@@ -5,17 +5,22 @@
 DeviceDriver::DeviceDriver(const char *r, const int count) :
 rootName(r),
 logicalUnitCount(count),
-logicalUnits(new LogicalUnitInfo*[count]())
+logicalUnits(new LogicalUnitInfo*[count]()),
+deviceIndex(0)
 {};
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::update(unsigned long deltaMicros) {
+void DeviceDriver::setDeviceIndex(int idx) {
+  deviceIndex = idx;
+}
+
+int DeviceDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
   return ESUCCESS;
 }
 
-int DeviceDriver::report(unsigned long deltaMillis) {
-  return ESUCCESS;
+int DeviceDriver::milliTimer(unsigned long deltaMillis, ClientReporter *r) {
+  return ESUCCESS ;
 }
 
 //---------------------------------------------------------------------------

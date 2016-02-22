@@ -19,15 +19,15 @@ public:
 
   StepperDriver(const char *dName, int addrCount);
 
-  virtual int open(const char *name, int flags = 0);
-  virtual int status(int handle, int reg, int count, byte *buf);
-  virtual int control(int handle, int reg, int count, byte *buf);
-  virtual int read(int handle, int count, byte *buf);
-  virtual int write(int handle, int count, byte *buf);
-  virtual int close(int handle);
+  int open(const char *name, int flags = 0);
+  int status(int handle, int reg, int count, byte *buf);
+  int control(int handle, int reg, int count, byte *buf);
+  int read(int handle, int count, byte *buf);
+  int write(int handle, int count, byte *buf);
+  int close(int handle);
 
-  int microsecondTimeBase();  // update()
-  int millisecondTimeBase();  // report()
+  int microTimer(unsigned long deltaMicros, ClientReporter *r);
+  int milliTimer(unsigned long deltaMillis, ClientReporter *r);
 
 private:
   DECLARE_SEMVER

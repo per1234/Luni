@@ -25,8 +25,8 @@ public:
     int write(int handle, int count, byte *buf);
     int close(int handle);
 
-    int report(unsigned long milliDelta);
-    int update(unsigned long microDelta);
+    int microTimer(unsigned long deltaMicros, ClientReporter *r);
+    int milliTimer(unsigned long deltaMillis, ClientReporter *r);
 
 private:
     DECLARE_SEMVER
@@ -37,7 +37,7 @@ private:
 
     unsigned long previousTime[2];   // the time the last interval expired
     unsigned long currentTime[2];    // the current values from micros() and millis()
-    unsigned long samples[SAMPLE_COUNT+1];
+    unsigned long samples[SAMPLE_COUNT + 1];
     int sampleIndex;
     bool isSampleBufferFull;
 
