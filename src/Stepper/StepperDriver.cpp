@@ -56,11 +56,8 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CSR::Configure):
-    return statusConfigure(handle, reg, count, buf);
-
-  case static_cast<int>(Stepper::RPMSpeed):
-    return statusRPMSpeed(handle, reg, count, buf);
+  case static_cast<int>(Stepper::RPMSpeeds):
+    return statusRPMSpeeds(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::AtPosition):
     return statusAtPosition(handle, reg, count, buf);
@@ -80,13 +77,13 @@ int StepperDriver::control(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
   case static_cast<int>(CCR::Configure):
-    return controlCCR_Configure(handle, reg, count, buf);
+    return controlConfigure(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::MoveRelative):
-    return controlSTP_MoveR(handle, reg, count, buf);
+    return controlMoveRelative(handle, reg, count, buf);
 
-  case static_cast<int>(Stepper::RPMSpeed):
-    return controlSTP_RPMSpeed(handle, reg, count, buf);
+  case static_cast<int>(Stepper::RPMSpeeds):
+    return controlRPMSpeeds(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -109,12 +106,18 @@ int StepperDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
-  int StepperDriver::statusConfigure(int handle, int reg, int count, byte *buf) {
-  return ENOTSUP;
-}
+int StepperDriver::statusRPMSpeeds(int handle, int reg, int count, byte *buf) {
+  StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
+  if (currentUnit == 0) return ENOTCONN;
+  AsyncStepper *motor = currentUnit->getDeviceObject();
+  if (motor == 0) return EBADFD;
+  if (count != 16) return EMSGSIZE;
 
-  int StepperDriver::statusRPMSpeed(int handle, int reg, int count, byte *buf) {
-  return ENOTSUP;
+  fromHostTo32LE(currentUnit->speedRPM, &buf[0]);
+  fromHostTo32LE(currentUnit->accelRPM, &buf[4]);
+  fromHostTo32LE(currentUnit->decelRPM, &buf[8]);
+  fromHostTo32LE(currentUnit->speedMaxRPM, &buf[12]);
+  return 16;
 }
 
 //---------------------------------------------------------------------------
@@ -122,19 +125,19 @@ int StepperDriver::close(int handle) {
 int StepperDriver::statusAtPosition(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
   if (currentUnit == 0) return ENOTCONN;
-  AsyncStepper *deviceObject = currentUnit->getDeviceObject();
-  if (deviceObject == 0) return EBADFD;
+  AsyncStepper *motor = currentUnit->getDeviceObject();
+  if (motor == 0) return EBADFD;
   if (count < 2) return EMSGSIZE;
 
-  bool stopped = deviceObject->update();
-  buf[0] = (int)(stopped);
-  buf[1] = (int)(false);
+  bool stopped = motor->update();
+  buf[0] = (byte)(stopped);
+  buf[1] = (byte)(false);
   return 2;
 }
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::controlCCR_Configure(int handle, int reg, int count, byte *buf) {
+int StepperDriver::controlConfigure(int handle, int reg, int count, byte *buf) {
   int interface, stepCount, pin1, pin2, pin3, pin4;
   AsyncStepper *motor;
 
@@ -170,34 +173,39 @@ int StepperDriver::controlCCR_Configure(int handle, int reg, int count, byte *bu
     return ENOTSUP;
   }
   currentUnit->setDeviceObject(motor);
-  currentUnit->setRPMSpeed(0);
-  currentUnit->setRPMMax(0);
-  currentUnit->setRPMA(0);
-  currentUnit->setRPMD(0);
+  currentUnit->speedRPM = 0;
+  currentUnit->speedMaxRPM = 0;
+  currentUnit->accelRPM = 0;
+  currentUnit->decelRPM = 0;
 
   return count;
 }
 
-int StepperDriver::controlSTP_RPMSpeed(int handle, int reg, int count, byte *buf) {
-  AsyncStepper *motor;
+int StepperDriver::controlRPMSpeeds(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
-  AsyncStepper *deviceObject = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
-  if (deviceObject == 0) return EBADSLT;
-  if (count != 4) return EMSGSIZE;
+  if (currentUnit == 0) return ENOTCONN;
+  AsyncStepper *motor = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
+  if (motor == 0) return EBADSLT;
+  if (count != 16) return EMSGSIZE;
 
-  currentUnit->setRPMSpeed(from32LEToHost(buf));
+  currentUnit->speedRPM = from32LEToHost(&buf[0]);
+  currentUnit->accelRPM = from32LEToHost(&buf[4]);
+  currentUnit->decelRPM = from32LEToHost(&buf[8]);
+  currentUnit->speedMaxRPM = from32LEToHost(&buf[12]);
   return count;
 }
 
-int StepperDriver::controlSTP_MoveR(int handle, int reg, int count, byte *buf) {
-  AsyncStepper *motor;
+int StepperDriver::controlMoveRelative(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
-  AsyncStepper *deviceObject = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
-  if (deviceObject == 0) return EBADSLT;
+  if (currentUnit == 0) return ENOTCONN;
+  AsyncStepper *motor = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
+  if (motor == 0) return EBADSLT;
   if (count != 5) return EMSGSIZE;
 
-  deviceObject->setStepsToMove((int)from32LEToHost(buf), currentUnit->getRPMSpeed(),
-                               currentUnit->getRPMA(), currentUnit->getRPMD());
+  int actualSpeedRequested = (currentUnit->speedMaxRPM <= 0) ? (int)(currentUnit->speedRPM) :
+                             (int)(constrain(currentUnit->speedRPM, 0, currentUnit->speedMaxRPM));
+  motor->setStepsToMove((int)from32LEToHost(buf), actualSpeedRequested,
+                        (int)currentUnit->accelRPM, (int)currentUnit->decelRPM);
   return count;
 }
 

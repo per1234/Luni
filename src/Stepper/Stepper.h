@@ -7,7 +7,7 @@
 
 enum class Stepper : int {
     MoveRelative = 0,
-    RPMSpeed = 1,
+    RPMSpeeds = 1,
     AtPosition = 2
 };
 

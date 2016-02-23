@@ -97,19 +97,35 @@ Get the configuration of the stepper motor attached to the given handle and its 
      5  (opt) absolute position (steps) (MSB)
 
 ---
-###`Stepper::RPMSpeed`
-####Set stepping speed using Revolutions Per Minute
+###`Stepper::RPMSpeeds`
+####Set stepping speed values using Revolutions Per Minute
+
+###`Stepper::RPMSpeeds`
+####Get stepping speed values using Revolutions Per Minute
 
 *Method signature*
 
-`int control(int handle, Stepper::RPMSpeed, 4, byte *buf);`
+`int control(int handle, Stepper::RPMSpeed, 16, byte *buf);`
+`int status(int handle, Stepper::RPMSpeed, 16, byte *buf);`
 
 *Parameter block buffer*
 
      0  RPM (LSB)
      1  RPM
-     2  RPM
-     3  RPM (MSB)
+     2  0
+     3  0 (MSB)
+     4  accel (LSB)
+     5  accel
+     6  0
+     7  0 (MSB)
+     8  decel (LSB)
+     9  decel
+    10  0
+    11  0 (MSB)
+    12  Max RPM (LSB)
+    13  Max RPM
+    14  0
+    15  0 (MSB)
 
 
 ##MCP9808 Temperature Sensor

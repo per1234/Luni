@@ -32,11 +32,10 @@ public:
 private:
   DECLARE_SEMVER
 
-  int controlCCR_Configure(int handle, int reg, int count, byte *buf);
-  int controlSTP_MoveR(int handle, int reg, int count, byte *buf);
-  int controlSTP_RPMSpeed(int handle, int reg, int count, byte *buf);
-  int statusConfigure(int handle, int reg, int count, byte *buf);
-  int statusRPMSpeed(int handle, int reg, int count, byte *buf);
+  int controlConfigure(int handle, int reg, int count, byte *buf);
+  int controlMoveRelative(int handle, int reg, int count, byte *buf);
+  int controlRPMSpeeds(int handle, int reg, int count, byte *buf);
+  int statusRPMSpeeds(int handle, int reg, int count, byte *buf);
   int statusAtPosition(int handle, int reg, int count, byte *buf);
 
 };
