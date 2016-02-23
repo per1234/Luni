@@ -5,7 +5,7 @@
 
 ----------
 
-## DeviceFeature and Device Drivers - Appendix A: Standard Virtual Registers
+## DeviceFeature and Device Drivers - Appendix A: Common Registers
 
 The document device-driver.md describes the overall device feature proposal and most parts of the detailed design.
 
@@ -19,10 +19,10 @@ The status and control methods operate based on register numbers.  On an actual 
 
 ###Standard Virtual Registers
 
-The `reg` parameter is always a signed 16-bit integer value.  Physical device register numbers and device-specific virtual register numbers are positive.  The standard virtual register numbers defined below are negative.
+The `reg` parameter is always a signed 16-bit integer value.  Physical device register numbers and device-specific virtual register numbers are non-negative.  The standard virtual register numbers defined below are negative.
 
 ---
-###Open
+##Open
 
     int open(const char* name)
     int open(const char* name, int flags)
@@ -30,48 +30,90 @@ The `reg` parameter is always a signed 16-bit integer value.  Physical device re
 The open method does not use any registers.
 
 ---
-###Status
+##Status (CSR::)
 
     int status(int handle, int reg, int count, byte *buf)
 
 Read information from a register (or virtual register) in the device or device driver.  
 
-Standard virtual registers are:
-
-- VR_Version
-- VR_DeviceName
-- VR_UnitName
-- VR_UnitCount
-- VR_Debug
-
+Standard status registers are in the CSR namespace.
 
 ---
-###Control
+###`CSR::DriverVersion`
+
+####Get version number and name of the DeviceDriver.
+
+###`CSR::LibraryVersion`
+
+####Get version number and name of the supporting library.
+
+Version numbers are in the Semantic Versioning format x.y.z-a.b.c  See [semver.org](http://semver.org) for more info.  
+
+The first byte of the return data buffer is the size in bytes of the version identifier packet that follows.  Name strings use UTF-8 encoding and are null-terminated.
+
+In the initial implementation, the size of the version identifier packet is 6 bytes.  The name string immediately follows the version identifier packet and is limited to 128 bytes maximum, including the null terminator.
+
+The size of the receiving buffer should be large enough to hold the 1-byte packet size, a version identifier packet, and a name string (including the null terminator). If the buffer size is not large enough, an error will be returned (`EMSGSIZE`).
+
+*Method signature*
+
+`int status(int handle, CDR_DriverVersion, int bufSize, byte *buf)`
+`int status(int handle, CDR_LibraryVersion, int bufSize, byte *buf)`
+
+*Return data buffer*
+
+     0  version descriptor packet size (6, in this example)
+     1  major version (x)
+     2  minor version (y)
+     3  patch version (z)
+     4  pre-release (a)
+     5  pre-release (b)
+     6  pre-release (c)
+     7..n  name string (UTF-8, null terminated)
+
+
+
+     0  version descriptor packet size (3, in this example)
+     1  major version (x)
+     2  minor version (y)
+     3  patch version (z)
+     4..n  name string (UTF-8, null terminated)
+
+---
+##Control
 
     int control(int handle, int reg, int count, byte *buf)
 
 Write information to a register (or virtual register) in the device or device driver.  
 
-Standard virtual registers are:
-
-- VR_Reset
+Standard control registers are in the CCR namespace.
 
 ---
-###Read
+###`CCR::Reset`
+
+####Reset the device driver state.
+
+###`CCR::Configure`
+
+####Configure a logical unit instance.
+
+
+---
+##Read
 
     int read(int handle, int count, byte *buf)
 
 The read method does not use any registers, it always returns the bytes available from the input stream (currently) associated with the device.  This stream can be real data from a physical device, or a composed stream created by the driver.
 
 ---
-###Write
+##Write
 
     int write(int handle, int count, byte *buf)
 
 The write method does not use any registers, it always writes the bytes provided to the output stream (currently) associated with the device.  This stream can be real data to a physical device, or a virtual stream used by the driver.
 
 ---
-###Close
+##Close
 
     int close(int handle)
 

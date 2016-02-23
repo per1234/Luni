@@ -10,58 +10,22 @@ The document device-driver.md describes the overall device feature proposal and 
 
 This Appendix B defines the registers that are actually implemented by several known device drivers and the detailed format of the parameter block bodies they expect.
 
-##Common Device Registers (CDR_)
+##StepperDriver
 
-###`CDR_DriverVersion`
-###`CDR_LibraryVersion`
-
-####Get version number and name of the DeviceDriver or supporting library.
-
-Version numbers are in the Semantic Versioning format x.y.z-a.b.c  See [semver.org](http://semver.org) for more info.  
-
-The first byte of the return data buffer is the size in bytes of the version identifier packet that follows.  Name strings use UTF-8 encoding and are null-terminated.
-
-In the initial implementation, the size of the version identifier packet is 6 bytes.  The name string immediately follows the version identifier packet and is limited to 128 bytes maximum, including the null terminator.
-
-The size of the receiving buffer should be large enough to hold the 1-byte packet size, a version identifier packet, and a name string (including the null terminator). If the buffer size is not large enough, an error will be returned (`EMSGSIZE`).
-
-*Method signature*
-
-`int status(int handle, CDR_DriverVersion, int bufSize, byte *buf)`
-`int status(int handle, CDR_LibraryVersion, int bufSize, byte *buf)`
-
-*Return data buffer*
-
-     0  version descriptor packet size (6, in this example)
-     1  major version (x)
-     2  minor version (y)
-     3  patch version (z)
-     4  pre-release (a)
-     5  pre-release (b)
-     6  pre-release (c)
-     7..n  name string (UTF-8, null terminated)
-
-
-
-     0  version descriptor packet size (3, in this example)
-     1  major version (x)
-     2  minor version (y)
-     3  patch version (z)
-     4..n  name string (UTF-8, null terminated)
-
----
-
-##StepperDriverBasic
-
-###`CDR_Configure`
-####Get/set stepper motor interface configuration
+###`CCR::Configure`
+####Set stepper motor interface configuration
 
 Configure the stepper motor attached to the given handle and its associated software object.
 
-*Method signature*
+###`CSR::Configure`
+####Get stepper motor interface configuration
 
-`int status(int handle, CDR_Configure, int count, byte *buf)`
-`int control(int handle, CDR_Configure, int count, byte *buf)`
+Get the configuration of the stepper motor attached to the given handle and its associated software object.
+
+*Method signatures*
+
+`int status(int handle, CSR::Configure, int count, byte *buf)`
+`int control(int handle, CCR::Configure, int count, byte *buf)`
 
 *Parameter block buffer*
 
@@ -100,12 +64,12 @@ Configure the stepper motor attached to the given handle and its associated soft
     10  pin4 (MSB)
 
 ---
-###`STP_MoveR`
+###`Stepper::MoveR`
 ####Move to new relative position
 
 *Method signature*
 
-`int control(int handle, STP_MoveR, 5, byte *buf);`
+`int control(int handle, Stepper::MoveR, 5, byte *buf);`
 
 *Parameter block buffer*
 
@@ -116,12 +80,29 @@ Configure the stepper motor attached to the given handle and its associated soft
      4  block? (0 or 1)
 
 ---
-###`STP_RPMSpeed`
+###`Stepper::AtPosition`
+####Stopped at most recently commanded position? (synchronous or asynchronous)
+
+*Method signature*
+
+`int status(int handle, Stepper::AtPosition, 5, byte *buf);`
+
+*Parameter block buffer*
+
+     0  At position? 0 -> no (running), 1 -> yes (stopped)
+     1  Position provided?  0 -> no, 1 -> yes
+     2  (opt) absolute position (steps) (LSB)
+     3  (opt) absolute position (steps)
+     4  (opt) absolute position (steps)
+     5  (opt) absolute position (steps) (MSB)
+
+---
+###`Stepper::RPMSpeed`
 ####Set stepping speed using Revolutions Per Minute
 
 *Method signature*
 
-`int control(int handle, STP_RPMSpeed, 4, byte *buf);`
+`int control(int handle, Stepper::RPMSpeed, 4, byte *buf);`
 
 *Parameter block buffer*
 
