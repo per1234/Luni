@@ -62,6 +62,12 @@ int DeviceDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
+int DeviceDriver::getFullHandle(int lun) {
+  return ((deviceIndex & 0x7F) << 7) | (lun & 0x7F);
+}
+
+//---------------------------------------------------------------------------
+
 int DeviceDriver::buildVersionResponse(const byte *semver,const char *name,
   const char *prLabel, const char *bLabel, int count, byte *buf) {
 

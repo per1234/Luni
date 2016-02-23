@@ -6,6 +6,8 @@
 
 class StepperDriverLUI: public LogicalUnitInfo {
 
+    friend class StepperDriver;
+
 public:
 
     StepperDriverLUI();
@@ -46,6 +48,8 @@ private:
     int accelRPM;
     int decelRPM;
     int speedMaxRPM;
+
+    byte buf[2];
 
 };
 

@@ -27,12 +27,13 @@
 enum class CSR : int {
     DriverVersion   = -1,   /* Get driver name and version */
     LibraryVersion  = -2,   /* Get library name and version */
+    Configure       = -3,   /* Get configuration of a logical unit number instance */
     Debug           = -256  /* Do something helpful for debugging ... */
 };
 
 enum class CCR : int {
     Reset           = -1,   /* Reset all state in the device driver */
-    Configure       = -2,   /* Configure a logical unit number instance */
+    Configure       = -3,   /* Set configuration of a logical unit number instance */
     Debug           = -256  /* Do something helpful for debugging ... */
 };
 
@@ -70,6 +71,9 @@ public:
     virtual int milliTimer(unsigned long deltaMillis, ClientReporter *r);
 
 protected:
+
+    int getFullHandle(int lun);
+
     const char *rootName;
 
     int deviceIndex;        // the major handle value, ie index in the DeviceTable

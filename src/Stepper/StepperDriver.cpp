@@ -48,7 +48,6 @@ int StepperDriver::open(const char *name, int flags) {
  * Read a status register on the device.
  */
 int StepperDriver::status(int handle, int reg, int count, byte *buf) {
-
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
@@ -57,6 +56,15 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
+  case static_cast<int>(CSR::Configure):
+    return statusConfigure(handle, reg, count, buf);
+
+  case static_cast<int>(Stepper::RPMSpeed):
+    return statusRPMSpeed(handle, reg, count, buf);
+
+  case static_cast<int>(Stepper::AtPosition):
+    return statusAtPosition(handle, reg, count, buf);
+
   default:
     return ENOTSUP;
   }
@@ -64,26 +72,67 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
   return EPANIC;
 }
 
+//---------------------------------------------------------------------------
+
 int StepperDriver::control(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
-  if (currentUnit == 0) {
-    return ENOTCONN;
-  }
+  if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
   case static_cast<int>(CCR::Configure):
     return controlCCR_Configure(handle, reg, count, buf);
 
-  case static_cast<int>(StepperRegister::MoveRelative):
+  case static_cast<int>(Stepper::MoveRelative):
     return controlSTP_MoveR(handle, reg, count, buf);
 
-  case static_cast<int>(StepperRegister::RPMSpeed):
+  case static_cast<int>(Stepper::RPMSpeed):
     return controlSTP_RPMSpeed(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
   }
 }
+
+//---------------------------------------------------------------------------
+
+int StepperDriver::read(int handle, int count, byte *buf) {
+  return ENOSYS;
+}
+
+int StepperDriver::write(int handle, int count, byte *buf) {
+  return ENOSYS;
+}
+
+int StepperDriver::close(int handle) {
+  return DeviceDriver::close(handle);
+}
+
+//---------------------------------------------------------------------------
+
+  int StepperDriver::statusConfigure(int handle, int reg, int count, byte *buf) {
+  return ENOTSUP;
+}
+
+  int StepperDriver::statusRPMSpeed(int handle, int reg, int count, byte *buf) {
+  return ENOTSUP;
+}
+
+//---------------------------------------------------------------------------
+
+int StepperDriver::statusAtPosition(int handle, int reg, int count, byte *buf) {
+  StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
+  if (currentUnit == 0) return ENOTCONN;
+  AsyncStepper *deviceObject = currentUnit->getDeviceObject();
+  if (deviceObject == 0) return EBADFD;
+  if (count < 2) return EMSGSIZE;
+
+  bool stopped = deviceObject->update();
+  buf[0] = (int)(stopped);
+  buf[1] = (int)(false);
+  return 2;
+}
+
+//---------------------------------------------------------------------------
 
 int StepperDriver::controlCCR_Configure(int handle, int reg, int count, byte *buf) {
   int interface, stepCount, pin1, pin2, pin3, pin4;
@@ -92,7 +141,7 @@ int StepperDriver::controlCCR_Configure(int handle, int reg, int count, byte *bu
   if (count < 7) return EMSGSIZE;
 
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
-
+  if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *deviceObject = currentUnit->getDeviceObject();
   if (deviceObject != 0) return EBUSY;
 
@@ -154,22 +203,28 @@ int StepperDriver::controlSTP_MoveR(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::read(int handle, int count, byte *buf) {
-  return ENOSYS;
-}
-
-int StepperDriver::write(int handle, int count, byte *buf) {
-  return ENOSYS;
-}
-
-int StepperDriver::close(int handle) {
-  return DeviceDriver::close(handle);
-}
-
-//---------------------------------------------------------------------------
-
 int StepperDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
-  return ESUCCESS;
+
+  // update active stepper positions
+
+  for (int lun = 0; lun < logicalUnitCount; lun++) {
+    if (logicalUnits[lun] != 0) {
+      StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[lun]);
+      AsyncStepper *motor = currentUnit->getDeviceObject();
+      if (motor != 0) {
+
+        // notify client application when stepping is complete
+
+        int reg = static_cast<int>(Stepper::AtPosition);
+        int status = statusAtPosition(lun, reg, 2, &(currentUnit->buf[0]));
+
+        if ((status == 2) && (currentUnit->buf[0] == 1)) {
+          int handle = DeviceDriver::getFullHandle(lun);
+          r->reportStatus(handle, status, &(currentUnit->buf[0]));
+        }
+      }
+    }
+  }
 }
 
 int StepperDriver::milliTimer(unsigned long deltaMillis, ClientReporter *r) {

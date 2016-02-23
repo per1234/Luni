@@ -32,7 +32,7 @@ void StepperDriverLUI::setRPMD(int targetRPMD) {
   decelRPM = targetRPMD;
 }
 
-int StepperDriverLUI::StepperDriverLUI::getRPMD(){
+int StepperDriverLUI::getRPMD(){
   return decelRPM;
 }
 

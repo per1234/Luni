@@ -5,9 +5,10 @@
 
 // Stepper register definitions
 
-enum class StepperRegister : int {
+enum class Stepper : int {
     MoveRelative = 0,
-    RPMSpeed = 1
+    RPMSpeed = 1,
+    AtPosition = 2
 };
 
 // Stepper interface definitions
