@@ -36,7 +36,7 @@ The open method does not use any registers.
 
 Read information from a register (or virtual register) in the device or device driver.  
 
-Standard status registers are in the CSR namespace.
+Common status registers are in the CSR namespace.
 
 ---
 ###`CSR::DriverVersion`
@@ -78,6 +78,36 @@ The size of the receiving buffer should be large enough to hold the 1-byte packe
      2  minor version (y)
      3  patch version (z)
      4..n  name string (UTF-8, null terminated)
+---
+###`CSR::Intervals`
+
+####Get settings of the microsecond and millisecond timer intervals for the device driver.
+
+There are two timer intervals for each device driver, one set in microseconds and the other set in milliseconds.  If the microsecond value is non-zero the microsecondTimer(...) method of the driver is called each time the interval elapses.  Similarly, each time a non-zero millisecond interval elapses, the millisecondTimer(...) method of the driver is called.
+
+*Method signature*
+
+`int status(int handle, CSR::Intervals, int bufSize, byte *buf)`
+
+
+*Return data buffer*
+
+     0  version descriptor packet size (6, in this example)
+     1  major version (x)
+     2  minor version (y)
+     3  patch version (z)
+     4  pre-release (a)
+     5  pre-release (b)
+     6  pre-release (c)
+     7..n  name string (UTF-8, null terminated)
+
+
+
+     0  version descriptor packet size (3, in this example)
+     1  major version (x)
+     2  minor version (y)
+     3  patch version (z)
+     4..n  name string (UTF-8, null terminated)
 
 ---
 ##Control
@@ -86,7 +116,7 @@ The size of the receiving buffer should be large enough to hold the 1-byte packe
 
 Write information to a register (or virtual register) in the device or device driver.  
 
-Standard control registers are in the CCR namespace.
+Common control registers are in the CCR namespace.
 
 ---
 ###`CCR::Reset`
