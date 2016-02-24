@@ -146,7 +146,7 @@ int StepperDriver::controlConfigure(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitHandle(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *deviceObject = currentUnit->getDeviceObject();
-  if (deviceObject != 0) return EBUSY;
+  if (deviceObject == 0) return EBADFD;
 
   interface = from8LEToHost(buf);
   stepCount = from16LEToHost(&buf[1]);
@@ -221,10 +221,10 @@ int StepperDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
       AsyncStepper *motor = currentUnit->getDeviceObject();
       if (motor != 0) {
 
-        // notify client application when stepping is complete
-
         int reg = static_cast<int>(Stepper::AtPosition);
         int status = statusAtPosition(lun, reg, 2, &(currentUnit->buf[0]));
+
+        // notify client application when stepping is complete
 
         if ((status == 2) && (currentUnit->buf[0] == 1)) {
           int handle = DeviceDriver::getFullHandle(lun);
