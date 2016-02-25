@@ -80,12 +80,12 @@ Get the configuration of the stepper motor attached to the given handle and its 
      4  block? (0 or 1)
 
 ---
-###`Stepper::AtPosition`
+###`Stepper::PositionEvent`
 ####Stopped at most recently commanded position? (synchronous or asynchronous)
 
 *Method signature*
 
-`int status(int handle, Stepper::AtPosition, 5, byte *buf);`
+`int status(int handle, Stepper::PositionEvent, 5, byte *buf);`
 
 *Parameter block buffer*
 
@@ -98,35 +98,26 @@ Get the configuration of the stepper motor attached to the given handle and its 
 
 ---
 ###`Stepper::RPMSpeeds`
-####Set stepping speed values using Revolutions Per Minute
+####Set stepping speed using 16-bit Revolutions Per Minute values
 
 ###`Stepper::RPMSpeeds`
-####Get stepping speed values using Revolutions Per Minute
+####Get stepping speed using 16-bit Revolutions Per Minute values
 
 *Method signature*
 
-`int control(int handle, Stepper::RPMSpeed, 16, byte *buf);`
-`int status(int handle, Stepper::RPMSpeed, 16, byte *buf);`
+`int control(int handle, Stepper::RPMSpeeds, 8, byte *buf);`
+`int status(int handle, Stepper::RPMSpeeds, 8, byte *buf);`
 
 *Parameter block buffer*
 
-     0  RPM (LSB)
-     1  RPM
-     2  0
-     3  0 (MSB)
+     0  target speed RPM (LSB)
+     1  target speed RPM (MSB)
+     2  max speed RPM (LSB)
+     3  max speed RPM (MSB)
      4  accel (LSB)
-     5  accel
-     6  0
-     7  0 (MSB)
-     8  decel (LSB)
-     9  decel
-    10  0
-    11  0 (MSB)
-    12  Max RPM (LSB)
-    13  Max RPM
-    14  0
-    15  0 (MSB)
-
+     5  accel (MSB)
+     6  decel (LSB)
+     7  decel (MSB)
 
 ##MCP9808 Temperature Sensor
 

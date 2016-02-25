@@ -8,7 +8,7 @@
 enum class Stepper : int {
     MoveRelative = 0,
     RPMSpeeds = 1,
-    AtPosition = 2
+    PositionEvent = 2
 };
 
 // Stepper interface definitions

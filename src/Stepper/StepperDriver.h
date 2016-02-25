@@ -36,7 +36,7 @@ private:
   int controlMoveRelative(int handle, int reg, int count, byte *buf);
   int controlRPMSpeeds(int handle, int reg, int count, byte *buf);
   int statusRPMSpeeds(int handle, int reg, int count, byte *buf);
-  int statusAtPosition(int handle, int reg, int count, byte *buf);
+  int statusPositionEvent(int handle, int reg, int count, byte *buf);
 
 };
 
