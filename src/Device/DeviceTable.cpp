@@ -44,7 +44,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
     int idx = 0;
     while (deviceArray[idx] != 0) {
       devices[idx] = deviceArray[idx];
-      devices[idx]->setDeviceIndex(idx);
+        devices[idx]->deviceIndex = idx;
       idx += 1;
     }
 
@@ -55,7 +55,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
         deviceCount = 0;
       } else {
         devices[idx] = metaDriver;
-        devices[idx]->setDeviceIndex(idx);
+        devices[idx]->deviceIndex = idx;
       }
     }
   }

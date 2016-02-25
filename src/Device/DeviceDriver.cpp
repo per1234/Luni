@@ -11,10 +11,6 @@ deviceIndex(0)
 
 //---------------------------------------------------------------------------
 
-void DeviceDriver::setDeviceIndex(int idx) {
-  deviceIndex = idx;
-}
-
 int DeviceDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
   return ESUCCESS;
 }

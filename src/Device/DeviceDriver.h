@@ -55,6 +55,8 @@ enum class CCR : int {
 
 class DeviceDriver {
 
+    friend class DeviceTable;
+
 public:
 
     DeviceDriver(const char *nameRoot, const int count);
@@ -65,9 +67,6 @@ public:
     virtual int read(int handle, int count, byte *buf) = 0;
     virtual int write(int handle, int count, byte *buf) = 0;
     virtual int close(int handle) = 0;
-
-    void setDeviceIndex(int idx);
-
 
     /**
      * Called at the expiration of a microsecond based interval to perform
