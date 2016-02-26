@@ -56,6 +56,9 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
+  case static_cast<int>(CSR::Intervals):
+    return DeviceDriver::statusIntervals(handle, reg, count, buf);
+
   case static_cast<int>(Stepper::RPMSpeeds):
     return statusRPMSpeeds(handle, reg, count, buf);
 
@@ -78,6 +81,9 @@ int StepperDriver::control(int handle, int reg, int count, byte *buf) {
   switch (reg) {
   case static_cast<int>(CCR::Configure):
     return controlConfigure(handle, reg, count, buf);
+
+  case static_cast<int>(CCR::Intervals):
+    return DeviceDriver::controlIntervals(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::MoveRelative):
     return controlMoveRelative(handle, reg, count, buf);
@@ -211,30 +217,41 @@ int StepperDriver::controlMoveRelative(int handle, int reg, int count, byte *buf
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
+int StepperDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
+  StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+  int result;
+  int reg;
+  int handle;
+  int status;
+  AsyncStepper *motor;
 
-  // update active stepper positions
+  switch (timerIndex) {
 
-  for (int lun = 0; lun < logicalUnitCount; lun++) {
-    if (logicalUnits[lun] != 0) {
-      StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[lun]);
-      AsyncStepper *motor = currentUnit->getDeviceObject();
-      if (motor != 0) {
+  case 0:     // microsecond timer
+    motor = currentUnit->getDeviceObject();
+    if (motor == 0) return EBADFD;
 
-        int reg = static_cast<int>(Stepper::PositionEvent);
-        int status = statusPositionEvent(lun, reg, 2, &(currentUnit->buf[0]));
+    reg = static_cast<int>(Stepper::PositionEvent);
+    handle = DeviceDriver::getFullHandle(lun);
+    status = statusPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
 
-        // notify client application when stepping is complete
+    // notify client application when stepping is complete
 
-        if ((status == 2) && (currentUnit->buf[0] == 1)) {
-          int handle = DeviceDriver::getFullHandle(lun);
-          r->reportStatus(handle, status, &(currentUnit->buf[0]));
-        }
-      }
+    if ((status == 2) && (currentUnit->buf[0] == 1)) {
+      r->reportStatus(handle, status, &(currentUnit->buf[0]));
     }
-  }
-}
+    result = ESUCCESS;
+    break;
 
-int StepperDriver::milliTimer(unsigned long deltaMillis, ClientReporter *r) {
-  return ESUCCESS ;
+  case 1:       // millisecond timer
+    result = ESUCCESS;
+    break;
+
+  default:      // unrecognized timer index
+    result = ENOTSUP;
+    break;
+  }
+
+  return result;
 }

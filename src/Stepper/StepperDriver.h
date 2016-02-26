@@ -26,8 +26,7 @@ public:
   int write(int handle, int count, byte *buf);
   int close(int handle);
 
-  int microTimer(unsigned long deltaMicros, ClientReporter *r);
-  int milliTimer(unsigned long deltaMillis, ClientReporter *r);
+  int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
 
 private:
   DECLARE_SEMVER

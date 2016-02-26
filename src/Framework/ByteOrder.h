@@ -13,21 +13,21 @@
 
 // The byte order in the byte array is Little Endian (LE).
 
-#define from8LEToHost( addressOfBytesToPack) ByteOrder::p1LE((addressOfBytesToPack))
+#define from8LEToHost(addressOfBytesToPack) ByteOrder::p1LE((addressOfBytesToPack))
 #define from16LEToHost(addressOfBytesToPack) ByteOrder::p2LE((addressOfBytesToPack))
 #define from32LEToHost(addressOfBytesToPack) ByteOrder::p4LE((addressOfBytesToPack))
 
-#define fromHostTo8LE( value,addressOfExtractedBytes) ByteOrder::x1LE((value),(addressOfExtractedBytes))
+#define fromHostTo8LE(value,addressOfExtractedBytes) ByteOrder::x1LE((value),(addressOfExtractedBytes))
 #define fromHostTo16LE(value,addressOfExtractedBytes) ByteOrder::x2LE((value),(addressOfExtractedBytes))
 #define fromHostTo32LE(value,addressOfExtractedBytes) ByteOrder::x4LE((value),(addressOfExtractedBytes))
 
 // The byte order in the byte array is Big Endian (BE).
 
-#define from8BEToHost( addressOfBytesToPack) ByteOrder::p1BE((addressOfBytesToPack))
+#define from8BEToHost(addressOfBytesToPack) ByteOrder::p1BE((addressOfBytesToPack))
 #define from16BEToHost(addressOfBytesToPack) ByteOrder::p2BE((addressOfBytesToPack))
 #define from32BEToHost(addressOfBytesToPack) ByteOrder::p4BE((addressOfBytesToPack))
 
-#define fromHostTo8BE( value,addressOfExtractedBytes) ByteOrder::x1BE((value),(addressOfExtractedBytes))
+#define fromHostTo8BE(value,addressOfExtractedBytes) ByteOrder::x1BE((value),(addressOfExtractedBytes))
 #define fromHostTo16BE(value,addressOfExtractedBytes) ByteOrder::x2BE((value),(addressOfExtractedBytes))
 #define fromHostTo32BE(value,addressOfExtractedBytes) ByteOrder::x4BE((value),(addressOfExtractedBytes))
 

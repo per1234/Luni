@@ -4,6 +4,7 @@
 #include <arduino.h>
 #include <avr/pgmspace.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include <Framework/ByteOrder.h>
 #include <Framework/SemVer.h>
@@ -53,6 +54,13 @@ enum class CCR : int {
 
 #define MAX_ROOT_NAME_LENGTH 32
 
+#define MINIMUM_UPDATE_INTERVAL 100    // microseconds
+#define DEFAULT_UPDATE_INTERVAL 200
+
+#define MINIMUM_REPORT_INTERVAL 10     // milliseconds
+#define DEFAULT_REPORT_INTERVAL 19
+
+
 class DeviceDriver {
 
     friend class DeviceTable;
@@ -68,20 +76,9 @@ public:
     virtual int write(int handle, int count, byte *buf) = 0;
     virtual int close(int handle) = 0;
 
-    /**
-     * Called at the expiration of a microsecond based interval to perform
-     * real time updates of position and control.
-     * @param deltaMicros Length, in microseconds, of the interval since the last call to this
-     * method.
-     */
-    virtual int microTimer(unsigned long deltaMicros, ClientReporter *r);
+    virtual int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
 
-    /**
-     * Called at the expiration of a millisecond based interval to provide
-     * an opportunity for reporting and other lower frequency tasks.
-     * @param deltaMillis Length, in milliseconds, of the interval since the last call to this method.
-     */
-    virtual int milliTimer(unsigned long deltaMillis, ClientReporter *r);
+    int checkForTimerEvents(ClientReporter *r);
 
 protected:
 
@@ -94,7 +91,15 @@ protected:
     LogicalUnitInfo **logicalUnits;
 
     int buildVersionResponse(const byte *semver, const char *name,
-        const char *prLabel, const char *bLabel, int count, byte *buf);
+                             const char *prLabel, const char *bLabel, int count, byte *buf);
+
+    int controlIntervals(int handle, int reg, int count, byte *buf);
+    int statusIntervals(int handle, int reg, int count, byte *buf);
+
+private:
+
+    unsigned long calculateElapsedTime(LogicalUnitInfo *lui, int timerIndex);
+
 };
 
 #endif

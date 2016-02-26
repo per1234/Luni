@@ -78,36 +78,29 @@ The size of the receiving buffer should be large enough to hold the 1-byte packe
      2  minor version (y)
      3  patch version (z)
      4..n  name string (UTF-8, null terminated)
+
 ---
 ###`CSR::Intervals`
 
 ####Get settings of the microsecond and millisecond timer intervals for the device driver.
 
-There are two timer intervals for each device driver, one set in microseconds and the other set in milliseconds.  If the microsecond value is non-zero the microsecondTimer(...) method of the driver is called each time the interval elapses.  Similarly, each time a non-zero millisecond interval elapses, the millisecondTimer(...) method of the driver is called.
+There are two timer intervals for each device driver, one set in microseconds and the other set in milliseconds.  If the microsecond value is non-zero the processTimerEvent(...) method of the driver is called each time the interval elapses.  Similarly, each time a non-zero millisecond interval elapses, the same processTimerEvent(...) method is called.  A `timerIndex` value (0 or 1) is provided as an argument to distinguish the two cases.
 
 *Method signature*
 
-`int status(int handle, CSR::Intervals, int bufSize, byte *buf)`
+`int status(int handle, CSR::Intervals, 8, byte *buf)`
 
 
 *Return data buffer*
 
-     0  version descriptor packet size (6, in this example)
-     1  major version (x)
-     2  minor version (y)
-     3  patch version (z)
-     4  pre-release (a)
-     5  pre-release (b)
-     6  pre-release (c)
-     7..n  name string (UTF-8, null terminated)
-
-
-
-     0  version descriptor packet size (3, in this example)
-     1  major version (x)
-     2  minor version (y)
-     3  patch version (z)
-     4..n  name string (UTF-8, null terminated)
+     0  microsecond interval (LSB) (ulong32)
+     1  microsecond interval
+     2  microsecond interval
+     3  microsecond interval (MSB)
+     4  millisecond interval (LSB) (ulong32)
+     5  millisecond interval
+     6  millisecond interval
+     7  millisecond interval (MSB)
 
 ---
 ##Control

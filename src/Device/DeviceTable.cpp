@@ -19,11 +19,6 @@ DEFINE_SEMVER(DeviceTable, 0, 1, 0)
  */
 DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
 
-  previousTime[0] = 0;
-  previousTime[1] = 0;
-  intervalTime[0] = DEFAULT_UPDATE_INTERVAL;
-  intervalTime[1] = DEFAULT_REPORT_INTERVAL;
-
   deviceCount = 0;
   if (deviceArray == 0) {
     devices = 0;
@@ -44,7 +39,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
     int idx = 0;
     while (deviceArray[idx] != 0) {
       devices[idx] = deviceArray[idx];
-        devices[idx]->deviceIndex = idx;
+      devices[idx]->deviceIndex = idx;
       idx += 1;
     }
 
@@ -109,31 +104,11 @@ int DeviceTable::close(int handle) {
 
 //----------------------------------------------------------------------------
 
-void DeviceTable::dispatchTimers(ClientReporter *reporter) {
-  unsigned long elapsedTime;
-  int status;
-
-  currentTime[0] = micros();
-  currentTime[1] = millis();
-
-  for (int idx = 0; idx < 2; idx++) {
-    if (currentTime[idx] >= previousTime[idx]) {
-      elapsedTime = currentTime[idx] - previousTime[idx];
-    } else {
-      elapsedTime = (ULONG_MAX - previousTime[idx]) + (currentTime[idx] + 1);
-    }
-
-    if (elapsedTime >= intervalTime[idx]) {
-      if (idx == 0) {
-        for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          status = devices[deviceIndex]->microTimer(elapsedTime, reporter);
-        }
-      } else {
-        for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-          status = devices[deviceIndex]->milliTimer(elapsedTime, reporter);
-        }
-      }
-      previousTime[idx] = currentTime[idx];
-    }
+int DeviceTable::dispatchTimers(ClientReporter *reporter) {
+  int result = ESUCCESS;
+  for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
+    int status = devices[deviceIndex]->checkForTimerEvents(reporter);
+    result = (status < 0) ? status : result;
   }
+  return result;
 }
