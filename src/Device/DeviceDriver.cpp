@@ -129,10 +129,10 @@ int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
   for (int timer = 0; timer < 2; timer++) {
     for (int lun = 0; lun < logicalUnitCount; lun++) {
       LogicalUnitInfo *currentDevice = logicalUnits[lun];
-      if (currentDevice != 0 && currentDevice->intervalTime[timer] != 0) {
+      if (currentDevice != 0 && currentDevice->intervalTime[timer] > 0) {
         currentDevice->deltaTime[timer] = calculateElapsedTime(currentDevice, timer);
         if (currentDevice->deltaTime[timer] >= currentDevice->intervalTime[timer]) {
-          status = processTimerEvent(lun, timer, r);
+          status = this->processTimerEvent(lun, timer, r);
           result = (status == ESUCCESS) ? result : status;
         }
       }
@@ -145,7 +145,7 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
   unsigned long elapsedTime;
   int status;
 
-  lui->currentTime[timerIndex] = (lui == 0) ? micros() : millis();
+  lui->currentTime[timerIndex] = (timerIndex == 0) ? micros() : millis();
 
   if (lui->currentTime[timerIndex] >= lui->previousTime[timerIndex]) {
     elapsedTime = lui->currentTime[timerIndex] - lui->previousTime[timerIndex];

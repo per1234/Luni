@@ -25,21 +25,20 @@ public:
     int write(int handle, int count, byte *buf);
     int close(int handle);
 
-    int microTimer(unsigned long deltaMicros, ClientReporter *r);
-    int milliTimer(unsigned long deltaMillis, ClientReporter *r);
+    int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
 
 private:
     DECLARE_SEMVER
 
-    int statusARI(int handle, int reg, int count, byte *buf);
+    int statusATI(int handle, int reg, int count, byte *buf);
 
-    unsigned long calculateAverageInterval();
+    unsigned long calculateAverageInterval(int idx);
 
     unsigned long previousTime[2];   // the time the last interval expired
     unsigned long currentTime[2];    // the current values from micros() and millis()
-    unsigned long samples[SAMPLE_COUNT + 1];
-    int sampleIndex;
-    bool isSampleBufferFull;
+    unsigned long samples[2][SAMPLE_COUNT + 1];
+    int sampleIndex[2];
+    bool isSampleBufferFull[2];
 
 };
 

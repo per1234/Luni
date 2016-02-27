@@ -1,5 +1,6 @@
 #include "PeekDriver.h"
 #include <limits.h>
+#include <Framework/ByteOrder.h>
 
 /**
  * This PeekDriver class is an administrative and development tool to
@@ -12,19 +13,19 @@ DEFINE_SEMVER(PeekDriver, 0, 1, 0)
 
 PeekDriver::PeekDriver(const char *dName, int count) :
   DeviceDriver(dName, count) {
-  previousTime[0] = 0;
-  previousTime[1] = 0;
-  currentTime[0] = 0;
-  currentTime[1] = 0;
-  sampleIndex = 0;
-  isSampleBufferFull = false;
+  for (int idx = 0; idx < 2; idx++) {
+    previousTime[idx] = 0;
+    currentTime[idx] = 0;
+    sampleIndex[idx] = 0;
+    isSampleBufferFull[idx] = false;
+  }
 }
 
 //---------------------------------------------------------------------------
 
 int PeekDriver::open(const char *name, int flags) {
   int lun;
-  int status = DeviceDriver::open(name,flags);
+  int status = DeviceDriver::open(name, flags);
   if (status < 0) {
     return status;
   }
@@ -48,10 +49,13 @@ int PeekDriver::status(int handle, int reg, int count, byte *buf) {
 
   case static_cast<int>(CSR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-      preReleaseLabel, buildLabel, count, buf);
+           preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(PeekRegister::AVG_REPORT_INTERVAL):
-    return statusARI(handle, reg, count, buf);
+  case static_cast<int>(CSR::Intervals):
+    return DeviceDriver::statusIntervals(handle, reg, count, buf);
+
+  case static_cast<int>(PeekRegister::AVG_INTERVALS):
+    return statusATI(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -59,7 +63,17 @@ int PeekDriver::status(int handle, int reg, int count, byte *buf) {
 }
 
 int PeekDriver::control(int handle, int reg, int count, byte *buf) {
-  return ENOSYS;
+  PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[handle & 0x7F]);
+  if (currentUnit == 0) return ENOTCONN;
+
+  switch (reg) {
+
+  case static_cast<int>(CCR::Intervals):
+    return DeviceDriver::controlIntervals(handle, reg, count, buf);
+
+  default:
+    return ENOTSUP;
+  }
 }
 
 int PeekDriver::read(int handle, int count, byte *buf) {
@@ -75,57 +89,59 @@ int PeekDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::microTimer(unsigned long deltaMicros, ClientReporter *r) {
-  return ESUCCESS;
-}
+// Collect duration samples.  The sample array is actually 0..SAMPLE_COUNT,
+// and the useful samples are in 1..SAMPLE_COUNT.
 
-//---------------------------------------------------------------------------
-
-// Collect a millisecond interval (report()) duration sample.  The sample array
-// is actually 0..SAMPLE_COUNT, and the useful samples are in 1..SAMPLE_COUNT.
-
-int PeekDriver::milliTimer(unsigned long deltaMillis, ClientReporter *r) {
-  currentTime[1] = millis();
-
+int PeekDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
   unsigned long elapsedTime;
 
-  if (currentTime[1] >= previousTime[1]) {
-    elapsedTime = currentTime[1] - previousTime[1];
-  } else {
-    elapsedTime = (ULONG_MAX - (previousTime[1] - currentTime[1])) + 1;
+  switch (timerIndex) {
+
+  case 0:       // microsecond timer
+  case 1:       // millisecond timer
+
+    currentTime[timerIndex] = (timerIndex == 0) ? micros() : millis();
+    if (currentTime[timerIndex] >= previousTime[timerIndex]) {
+      elapsedTime = currentTime[timerIndex] - previousTime[timerIndex];
+    } else {
+      elapsedTime = (ULONG_MAX - (previousTime[timerIndex] - currentTime[timerIndex])) + 1;
+    }
+
+    samples[timerIndex][sampleIndex[timerIndex]] = elapsedTime;
+    isSampleBufferFull[timerIndex] |= (sampleIndex[timerIndex] == SAMPLE_COUNT);
+    sampleIndex[timerIndex] = 1 + ((sampleIndex[timerIndex]) % SAMPLE_COUNT);
+    previousTime[timerIndex] = currentTime[timerIndex];
+    return ESUCCESS;
+
+  default:      // unrecognized timer index
+    return ENOTSUP;
+
   }
-
-  samples[sampleIndex] = elapsedTime;
-  isSampleBufferFull |= (sampleIndex == SAMPLE_COUNT);
-  sampleIndex = 1 + ((sampleIndex) % SAMPLE_COUNT);
-  previousTime[1] = currentTime[1];
-
-  return ESUCCESS;
 }
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::statusARI(int handle, int reg, int count, byte *buf) {
-  if (count < 4) {
+int PeekDriver::statusATI(int handle, int reg, int count, byte *buf) {
+  if (count < 8) {
     return EMSGSIZE;
-  } else if (isSampleBufferFull) {
-    unsigned long avg = calculateAverageInterval();
-    buf[0] = avg & 0xFF;
-    buf[1] = (avg >> 8) & 0xFF;
-    buf[2] = (avg >> 16) & 0xFF;
-    buf[3] = (avg >> 24) & 0xFF;
-    return 4;
-  } else {
-    return ENODATA;
   }
-
-  return ENOTSUP;
+  if (!isSampleBufferFull[0]) {
+    return EOWNERDEAD;
+  }
+  if (!isSampleBufferFull[1]) {
+    return ENOTRECOVERABLE;
+  }
+  for (int idx = 0; idx < 2; idx++) {
+    unsigned long avg = calculateAverageInterval(idx);
+    fromHostTo32LE(avg, buf + (4 * idx));
+  }
+  return 8;
 }
 
-unsigned long PeekDriver::calculateAverageInterval() {
+unsigned long PeekDriver::calculateAverageInterval(int timerIndex) {
   int sum = 0;
   for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
-    sum += samples[idx];
+    sum += samples[timerIndex][idx];
   }
   return sum / SAMPLE_COUNT;
 }
