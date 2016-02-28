@@ -52,7 +52,7 @@ int MCP9808Driver::status(int handle, int reg, int count, byte *buf) {
   uint8_t v8;
   uint16_t v16;
 
-  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[handle & 0x7F]);
+  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   int address = currentUnit->getI2CAddress();
 
@@ -88,7 +88,7 @@ int MCP9808Driver::status(int handle, int reg, int count, byte *buf) {
 }
 
 int MCP9808Driver::control(int handle, int reg, int count, byte *buf) {
-  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[handle & 0x7F]);
+  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;
   }
@@ -126,7 +126,7 @@ int MCP9808Driver::control(int handle, int reg, int count, byte *buf) {
 }
 
 int MCP9808Driver::read(int handle, int count, byte * buf) {
-  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[handle & 0x7F]);
+  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   if (count != 2) {

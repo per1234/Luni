@@ -35,7 +35,7 @@ int TableDriver::open(const char *name, int flags) {
  * Read a status value from the virtual device.
  */
 int TableDriver::status(int handle, int reg, int count, byte *buf) {
-  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[handle & 0x7F]);
+  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;
   }
@@ -54,7 +54,7 @@ int TableDriver::status(int handle, int reg, int count, byte *buf) {
  * Write a control value to the virtual device.
  */
 int TableDriver::control(int handle, int reg, int count, byte *buf) {
-  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[handle & 0x7F]);
+  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;
   }
@@ -70,22 +70,11 @@ int TableDriver::control(int handle, int reg, int count, byte *buf) {
  * @return        [status code.  <0 error, >= count of bytes read]
  */
 int TableDriver::read(int handle, int count, byte * buf) {
-  // TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[handle & 0x7F]);
-  // if (currentUnit == 0) {
-  //   return ENOTCONN;
-  // }
-
-  // for (int deviceIndex = 0; deviceIndex < theDeviceTable->deviceCount; deviceIndex++) {
-  //   DeviceDriver *dd = theDeviceTable->devices[deviceIndex];
-  //   int regV = static_cast<int>(CSR::DriverVersion);
-  //   dd->status(127,regV,count,buf);
-  // }
-  // return count;
   return ENOTSUP;
 }
 
 int TableDriver::write(int handle, int count, byte * buf) {
-  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[handle & 0x7F]);
+  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;
   }

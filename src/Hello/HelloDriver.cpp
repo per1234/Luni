@@ -36,7 +36,7 @@ int HelloDriver::open(const char *name, int flags) {
  */
 int HelloDriver::status(int handle, int reg, int count, byte *buf) {
 
-  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[handle & 0x7F]);
+  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -59,7 +59,7 @@ int HelloDriver::status(int handle, int reg, int count, byte *buf) {
 
 int HelloDriver::control(int handle, int reg, int count, byte *buf) {
 
-  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[handle & 0x7F]);
+  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -79,7 +79,7 @@ int HelloDriver::control(int handle, int reg, int count, byte *buf) {
 }
 
 int HelloDriver::read(int handle, int count, byte *buf) {
-  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[handle & 0x7F]);
+  HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (count < 0) return EMSGSIZE;
 

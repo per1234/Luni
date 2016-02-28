@@ -39,7 +39,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
     int idx = 0;
     while (deviceArray[idx] != 0) {
       devices[idx] = deviceArray[idx];
-      devices[idx]->deviceIndex = idx;
+      devices[idx]->deviceNumber = idx;
       idx += 1;
     }
 
@@ -50,7 +50,7 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
         deviceCount = 0;
       } else {
         devices[idx] = metaDriver;
-        devices[idx]->deviceIndex = idx;
+        devices[idx]->deviceNumber = idx;
       }
     }
   }
@@ -83,23 +83,23 @@ int DeviceTable::open(const char *name, int flags) {
 }
 
 int DeviceTable::control(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceHandle(handle)]->control(getUnitHandle(handle), reg, count, buf);
+  return devices[getDeviceNumber(handle)]->control(getUnitNumber(handle), reg, count, buf);
 }
 
 int DeviceTable::status(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceHandle(handle)]->status(getUnitHandle(handle), reg, count, buf);
+  return devices[getDeviceNumber(handle)]->status(getUnitNumber(handle), reg, count, buf);
 }
 
 int DeviceTable::read(int handle, int count, byte * buf) {
-  return devices[getDeviceHandle(handle)]->read(getUnitHandle(handle), count, buf);
+  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), count, buf);
 }
 
 int DeviceTable::write(int handle, int count, byte * buf) {
-  return devices[getDeviceHandle(handle)]->write(getUnitHandle(handle), count, buf);
+  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), count, buf);
 }
 
 int DeviceTable::close(int handle) {
-  return devices[getDeviceHandle(handle)]->close(getUnitHandle(handle));
+  return devices[getDeviceNumber(handle)]->close(getUnitNumber(handle));
 }
 
 //----------------------------------------------------------------------------
