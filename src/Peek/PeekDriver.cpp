@@ -13,12 +13,6 @@ DEFINE_SEMVER(PeekDriver, 0, 1, 0)
 
 PeekDriver::PeekDriver(const char *dName, int count) :
   DeviceDriver(dName, count) {
-  for (int idx = 0; idx < 2; idx++) {
-    previousTime[idx] = 0;
-    currentTime[idx] = 0;
-    sampleIndex[idx] = 0;
-    isSampleBufferFull[idx] = false;
-  }
 }
 
 //---------------------------------------------------------------------------
@@ -33,7 +27,10 @@ int PeekDriver::open(const char *name, int flags) {
   lun = status;
   PeekLUI *currentUnit = new PeekLUI();
 
-  // Any further validation of the current unit's appropriateness goes here ...
+  // for (int idx = 0; idx < 2; idx++) {
+  //   currentUnit->sampleIndex[idx] = 0;
+  //   currentUnit->isSampleBufferFull[idx] = false;
+  // }
 
   logicalUnits[lun] = currentUnit;
   return lun;
@@ -42,7 +39,7 @@ int PeekDriver::open(const char *name, int flags) {
 //---------------------------------------------------------------------------
 
 int PeekDriver::status(int handle, int reg, int count, byte *buf) {
-  PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[handle & 0x7F]);
+  PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -63,7 +60,7 @@ int PeekDriver::status(int handle, int reg, int count, byte *buf) {
 }
 
 int PeekDriver::control(int handle, int reg, int count, byte *buf) {
-  PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[handle & 0x7F]);
+  PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -92,25 +89,20 @@ int PeekDriver::close(int handle) {
 // Collect duration samples.  The sample array is actually 0..SAMPLE_COUNT,
 // and the useful samples are in 1..SAMPLE_COUNT.
 
-int PeekDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
+int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
   unsigned long elapsedTime;
 
-  switch (timerIndex) {
+  PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[lun]);
+  if (cU == 0) return ENOTCONN;
+
+  switch (timerSelector) {
 
   case 0:       // microsecond timer
   case 1:       // millisecond timer
 
-    currentTime[timerIndex] = (timerIndex == 0) ? micros() : millis();
-    if (currentTime[timerIndex] >= previousTime[timerIndex]) {
-      elapsedTime = currentTime[timerIndex] - previousTime[timerIndex];
-    } else {
-      elapsedTime = (ULONG_MAX - (previousTime[timerIndex] - currentTime[timerIndex])) + 1;
-    }
-
-    samples[timerIndex][sampleIndex[timerIndex]] = elapsedTime;
-    isSampleBufferFull[timerIndex] |= (sampleIndex[timerIndex] == SAMPLE_COUNT);
-    sampleIndex[timerIndex] = 1 + ((sampleIndex[timerIndex]) % SAMPLE_COUNT);
-    previousTime[timerIndex] = currentTime[timerIndex];
+    cU->samples[timerSelector][cU->sampleIndex[timerSelector]] = cU->deltaTime[timerSelector];
+    cU->isSampleBufferFull[timerSelector] |= (cU->sampleIndex[timerSelector] == SAMPLE_COUNT);
+    cU->sampleIndex[timerSelector] = 1 + ((cU->sampleIndex[timerSelector]) % (int)(SAMPLE_COUNT));
     return ESUCCESS;
 
   default:      // unrecognized timer index
@@ -122,26 +114,35 @@ int PeekDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
 //---------------------------------------------------------------------------
 
 int PeekDriver::statusATI(int handle, int reg, int count, byte *buf) {
+
+  PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
+  if (cU == 0) return ENOTCONN;
+
   if (count < 8) {
     return EMSGSIZE;
   }
-  if (!isSampleBufferFull[0]) {
-    return EOWNERDEAD;
-  }
-  if (!isSampleBufferFull[1]) {
+
+  // if (!(cU->isSampleBufferFull[0])) {
+  //   return ENODATA;
+  // }
+
+  if (cU->sampleIndex[1] < 0) return EOWNERDEAD;
+  if (cU->sampleIndex[1] == 0) return EINVAL;
+  if (cU->sampleIndex[1] > 0 && cU->sampleIndex[1] < SAMPLE_COUNT) return -cU->sampleIndex[1];
+  if (cU->sampleIndex[1] == SAMPLE_COUNT) return ENFILE;
+  if (cU->sampleIndex[1] > SAMPLE_COUNT) return EMFILE;
+
+  if (!(cU->isSampleBufferFull[1])) {
     return ENOTRECOVERABLE;
   }
-  for (int idx = 0; idx < 2; idx++) {
-    unsigned long avg = calculateAverageInterval(idx);
-    fromHostTo32LE(avg, buf + (4 * idx));
+
+  for (int timerIndex = 0; timerIndex < 2; timerIndex++) {
+    unsigned long sum = 0;
+    for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
+      sum += cU->samples[timerIndex][idx];
+    }
+    unsigned long avg = sum / SAMPLE_COUNT;
+    fromHostTo32LE(avg, buf + (4 * timerIndex));
   }
   return 8;
-}
-
-unsigned long PeekDriver::calculateAverageInterval(int timerIndex) {
-  int sum = 0;
-  for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
-    sum += samples[timerIndex][idx];
-  }
-  return sum / SAMPLE_COUNT;
 }

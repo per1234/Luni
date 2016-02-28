@@ -14,8 +14,8 @@
 
 // Extract 7-bit index values from a 14-bit handle
 
-#define getUnitHandle(handle) ((handle) & 0x7F)
-#define getDeviceHandle(handle) (((handle) >> 7) & 0x7F)
+#define getUnitNumber(handle) ((handle) & 0x7F)
+#define getDeviceNumber(handle) (((handle) >> 7) & 0x7F)
 
 // Open() flags
 
@@ -76,7 +76,7 @@ public:
     virtual int write(int handle, int count, byte *buf) = 0;
     virtual int close(int handle) = 0;
 
-    virtual int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
+    virtual int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
 
     int checkForTimerEvents(ClientReporter *r);
 
@@ -86,7 +86,7 @@ protected:
 
     const char *rootName;
 
-    int deviceIndex;        // the major handle value, ie index in the DeviceTable
+    int deviceNumber;        // the major handle value, ie index in the DeviceTable
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;
 

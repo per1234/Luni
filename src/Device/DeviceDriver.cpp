@@ -6,7 +6,7 @@ DeviceDriver::DeviceDriver(const char *r, const int count) :
   rootName(r),
   logicalUnitCount(count),
   logicalUnits(new LogicalUnitInfo * [count]()),
-  deviceIndex(0)
+  deviceNumber(0)
 {};
 
 //---------------------------------------------------------------------------
@@ -38,18 +38,45 @@ int DeviceDriver::open(const char *name, int flags) {
 }
 
 int DeviceDriver::close(int handle) {
-  LogicalUnitInfo *currentDevice = logicalUnits[(handle & 0x7F)];
-  if (currentDevice != 0) {
-    delete currentDevice;
-    logicalUnits[(handle & 0x7F)] = 0;
+  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
+  if (currentUnit != 0) {
+    delete currentUnit;
+    logicalUnits[getUnitNumber(handle)] = 0;
   }
   return ESUCCESS;
 }
 
 //---------------------------------------------------------------------------
 
+int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
+  int status;
+  int result = ESUCCESS;
+  for (int lun = 0; lun < logicalUnitCount; lun++) {
+    LogicalUnitInfo *currentUnit = logicalUnits[lun];
+    if (currentUnit != 0) {
+      for (int timer = 0; timer < 2; timer++) {
+        if (currentUnit->intervalTime[timer] > 0) {
+          currentUnit->deltaTime[timer] = calculateElapsedTime(currentUnit, timer);
+          if (currentUnit->deltaTime[timer] >= currentUnit->intervalTime[timer]) {
+            status = this->processTimerEvent(lun, timer, r);
+            currentUnit->previousTime[timer] = currentUnit->currentTime[timer];
+            result = (status == ESUCCESS) ? result : status;
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+int DeviceDriver::processTimerEvent(int lun, int timerSelector, ClientReporter * r) {
+  return ESUCCESS;
+}
+
+//---------------------------------------------------------------------------
+
 int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
-  LogicalUnitInfo *currentUnit = logicalUnits[getUnitHandle(handle)];
+  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
 
@@ -61,7 +88,7 @@ int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DeviceDriver::controlIntervals(int handle, int reg, int count, byte *buf) {
-  LogicalUnitInfo *currentUnit = logicalUnits[getUnitHandle(handle)];
+  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
 
@@ -73,7 +100,7 @@ int DeviceDriver::controlIntervals(int handle, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DeviceDriver::getFullHandle(int lun) {
-  return ((deviceIndex & 0x7F) << 7) | (lun & 0x7F);
+  return ((deviceNumber & 0x7F) << 7) | (lun & 0x7F);
 }
 
 //---------------------------------------------------------------------------
@@ -123,24 +150,6 @@ int DeviceDriver::buildVersionResponse(const byte *semver, const char *name,
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
-  int status;
-  int result = ESUCCESS;
-  for (int timer = 0; timer < 2; timer++) {
-    for (int lun = 0; lun < logicalUnitCount; lun++) {
-      LogicalUnitInfo *currentDevice = logicalUnits[lun];
-      if (currentDevice != 0 && currentDevice->intervalTime[timer] > 0) {
-        currentDevice->deltaTime[timer] = calculateElapsedTime(currentDevice, timer);
-        if (currentDevice->deltaTime[timer] >= currentDevice->intervalTime[timer]) {
-          status = this->processTimerEvent(lun, timer, r);
-          result = (status == ESUCCESS) ? result : status;
-        }
-      }
-    }
-  }
-  return result;
-}
-
 unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timerIndex) {
   unsigned long elapsedTime;
   int status;
@@ -154,13 +163,8 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
   }
 
   if (elapsedTime >= lui->intervalTime[timerIndex]) {
-    lui->previousTime[timerIndex] = lui->currentTime[timerIndex];
     return elapsedTime;
   } else {
     return 0;
   }
-}
-
-int DeviceDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
-  return ESUCCESS;
 }

@@ -5,8 +5,6 @@
 #include "PeekLUI.h"
 #include "Peek.h"
 
-#define SAMPLE_COUNT 16
-
 /**
  * This PeekDriver class is an administrative and development tool to
  * provide code analysis capabilities and a place to perform timing
@@ -25,7 +23,7 @@ public:
     int write(int handle, int count, byte *buf);
     int close(int handle);
 
-    int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
+    int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
 
 private:
     DECLARE_SEMVER
@@ -33,12 +31,6 @@ private:
     int statusATI(int handle, int reg, int count, byte *buf);
 
     unsigned long calculateAverageInterval(int idx);
-
-    unsigned long previousTime[2];   // the time the last interval expired
-    unsigned long currentTime[2];    // the current values from micros() and millis()
-    unsigned long samples[2][SAMPLE_COUNT + 1];
-    int sampleIndex[2];
-    bool isSampleBufferFull[2];
 
 };
 
