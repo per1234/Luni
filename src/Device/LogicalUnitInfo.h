@@ -4,10 +4,13 @@
 class LogicalUnitInfo {
 
   friend class DeviceDriver;
+  friend class PeekDriver;
 
 public:
   LogicalUnitInfo();
   virtual ~LogicalUnitInfo();
+
+private:
 
   unsigned long intervalTime[2];    // desired length of time between calls to update() and report()
   unsigned long previousTime[2];    // the time the last interval expired
