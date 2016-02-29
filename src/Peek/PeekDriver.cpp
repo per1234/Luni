@@ -94,7 +94,6 @@ int PeekDriver::close(int handle) {
 
 int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
   unsigned long elapsedTime;
-  // char errString[StringBufferSize];
 
   PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;
@@ -107,10 +106,6 @@ int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r)
     cU->samples[timerSelector][cU->sampleIndex[timerSelector]] = cU->deltaTime[timerSelector];
     cU->isSampleBufferFull[timerSelector] |= (cU->sampleIndex[timerSelector] == SAMPLE_COUNT);
     cU->sampleIndex[timerSelector] = 1 + ((cU->sampleIndex[timerSelector]) % (int)(SAMPLE_COUNT));
-
-    // snprintf(errString, StringBufferSize, "PTE: t:%1d, sI: %1d, f:%1d",
-    //          timerSelector, cU->sampleIndex[timerSelector], cU->isSampleBufferFull[timerSelector]);
-    // Firmata.sendString(errString);
 
     return ESUCCESS;
 
