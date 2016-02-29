@@ -17,9 +17,9 @@ This document defines the virtual registers that are available for every device.
 
 The status and control methods operate based on register numbers.  On an actual device, physical register numbers usually start at 0 and max out at a relatively low value like 16 or 32, depending on the device.  This DeviceDriver API uses a full 16-bit signed integer to identify the register of interest, so virtual quantities and actions can be implemented in addition to the actual physical device capabilities.
 
-###Standard Virtual Registers
+###Common Virtual Register Numbers
 
-The `reg` parameter is always a signed 16-bit integer value.  Physical device register numbers and device-specific virtual register numbers are non-negative.  The standard virtual register numbers defined below are negative.
+The `reg` parameter is always a signed 16-bit integer value.  Physical device register numbers and device-specific virtual register numbers are non-negative.  The common register numbers defined below are negative.
 
 ---
 ##Open
