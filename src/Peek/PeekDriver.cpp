@@ -10,7 +10,7 @@
  * provide code analysis capabilities and a place to perform timing
  * tests and the like.
  */
-DEFINE_SEMVER(PeekDriver, 0, 1, 0)
+DEFINE_SEMVER(PeekDriver, 0, 6, 0)
 
 //---------------------------------------------------------------------------
 

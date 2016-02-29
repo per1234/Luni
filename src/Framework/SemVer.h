@@ -20,7 +20,7 @@ static const PROGMEM char buildLabel[];
 // Put call to DEFINE_SEMVER in the definition file xx.cpp, but outside
 // of any constructor or method.  For example:
 //
-// DEFINE_SEMVER(TrialDriver,1,0,3)
+// DEFINE_SEMVER(TrialDriver, 0, 6, 0)
 //
 // Note that the scopeName argument is NOT a string literal and so has no
 // quotes around it in the call to the macro.  It is stringified where
