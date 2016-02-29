@@ -2,6 +2,9 @@
 #include <limits.h>
 #include <Framework/ByteOrder.h>
 
+// #include <ConfigurableFirmata.h>
+// #define StringBufferSize 100
+
 /**
  * This PeekDriver class is an administrative and development tool to
  * provide code analysis capabilities and a place to perform timing
@@ -91,8 +94,9 @@ int PeekDriver::close(int handle) {
 
 int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
   unsigned long elapsedTime;
+  // char errString[StringBufferSize];
 
-  PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[lun]);
+  PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;
 
   switch (timerSelector) {
@@ -103,6 +107,11 @@ int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r)
     cU->samples[timerSelector][cU->sampleIndex[timerSelector]] = cU->deltaTime[timerSelector];
     cU->isSampleBufferFull[timerSelector] |= (cU->sampleIndex[timerSelector] == SAMPLE_COUNT);
     cU->sampleIndex[timerSelector] = 1 + ((cU->sampleIndex[timerSelector]) % (int)(SAMPLE_COUNT));
+
+    // snprintf(errString, StringBufferSize, "PTE: t:%1d, sI: %1d, f:%1d",
+    //          timerSelector, cU->sampleIndex[timerSelector], cU->isSampleBufferFull[timerSelector]);
+    // Firmata.sendString(errString);
+
     return ESUCCESS;
 
   default:      // unrecognized timer index
@@ -114,35 +123,26 @@ int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r)
 //---------------------------------------------------------------------------
 
 int PeekDriver::statusATI(int handle, int reg, int count, byte *buf) {
-
+  unsigned long avg;
   PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (cU == 0) return ENOTCONN;
 
-  if (count < 8) {
-    return EMSGSIZE;
-  }
-
-  // if (!(cU->isSampleBufferFull[0])) {
-  //   return ENODATA;
-  // }
-
-  if (cU->sampleIndex[1] < 0) return EOWNERDEAD;
-  if (cU->sampleIndex[1] == 0) return EINVAL;
-  if (cU->sampleIndex[1] > 0 && cU->sampleIndex[1] < SAMPLE_COUNT) return -cU->sampleIndex[1];
-  if (cU->sampleIndex[1] == SAMPLE_COUNT) return ENFILE;
-  if (cU->sampleIndex[1] > SAMPLE_COUNT) return EMFILE;
-
-  if (!(cU->isSampleBufferFull[1])) {
-    return ENOTRECOVERABLE;
-  }
+  if (count < 8) return EMSGSIZE;
 
   for (int timerIndex = 0; timerIndex < 2; timerIndex++) {
     unsigned long sum = 0;
-    for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
-      sum += cU->samples[timerIndex][idx];
+
+    if (cU->intervalTime[timerIndex] != 0) {
+      if (!(cU->isSampleBufferFull[timerIndex])) return ENODATA;
+      for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
+        sum += cU->samples[timerIndex][idx];
+      }
+      avg = sum / SAMPLE_COUNT;
+    } else {
+      avg = 0;
     }
-    unsigned long avg = sum / SAMPLE_COUNT;
     fromHostTo32LE(avg, buf + (4 * timerIndex));
   }
+
   return 8;
 }

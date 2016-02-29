@@ -162,9 +162,6 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
     elapsedTime = (ULONG_MAX - lui->previousTime[timerIndex]) + (lui->currentTime[timerIndex] + 1);
   }
 
-  if (elapsedTime >= lui->intervalTime[timerIndex]) {
-    return elapsedTime;
-  } else {
-    return 0;
-  }
+  return elapsedTime;
+
 }
