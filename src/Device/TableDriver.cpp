@@ -34,7 +34,7 @@ int TableDriver::open(const char *name, int flags) {
 /**
  * Read a status value from the virtual device.
  */
-int TableDriver::status(int handle, int reg, int count, byte *buf) {
+int TableDriver::read(int handle, int reg, int count, byte *buf) {
   TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;
@@ -53,27 +53,7 @@ int TableDriver::status(int handle, int reg, int count, byte *buf) {
 /**
  * Write a control value to the virtual device.
  */
-int TableDriver::control(int handle, int reg, int count, byte *buf) {
-  TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
-  if (currentUnit == 0) {
-    return ENOTCONN;
-  }
-  return ENOSYS;
-}
-
-/**
- * The read() method of this device driver returns a string of all the
- * version strings for all the installed device drivers.
- * @param  handle [the identifier of the logical unit, as returned by an earlier call to open()]
- * @param  count  [size of the buffer in which to return the result]
- * @param  buf    [result buffer]
- * @return        [status code.  <0 error, >= count of bytes read]
- */
-int TableDriver::read(int handle, int count, byte * buf) {
-  return ENOTSUP;
-}
-
-int TableDriver::write(int handle, int count, byte * buf) {
+int TableDriver::write(int handle, int reg, int count, byte *buf) {
   TableLUI *currentUnit = static_cast<TableLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) {
     return ENOTCONN;

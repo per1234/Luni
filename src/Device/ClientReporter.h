@@ -17,11 +17,10 @@ class ClientReporter {
 public:
 
     virtual void reportOpen(int status) = 0;
-    virtual void reportStatus(int handle, int status, const byte *dpB) = 0;
-    virtual void reportRead(int handle, int status, const byte *dpB) = 0;
-    virtual void reportControl(int handle, int status) = 0;
-    virtual void reportWrite(int handle, int status) = 0;
-    virtual void reportClose(int handle, int status) = 0;
+    virtual void reportClose(int status, int handle) = 0;
+
+    virtual void reportRead(int status, int handle, const byte *dpB) = 0;
+    virtual void reportWrite(int status, int handle, const byte *dpB) = 0;
 
 };
 

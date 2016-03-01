@@ -75,7 +75,7 @@ int DeviceDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::readIntervals(int handle, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
@@ -87,7 +87,7 @@ int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::controlIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::writeIntervals(int handle, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;

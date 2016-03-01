@@ -41,7 +41,7 @@ int PeekDriver::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::status(int handle, int reg, int count, byte *buf) {
+int PeekDriver::read(int handle, int reg, int count, byte *buf) {
   PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
@@ -52,35 +52,28 @@ int PeekDriver::status(int handle, int reg, int count, byte *buf) {
            preReleaseLabel, buildLabel, count, buf);
 
   case static_cast<int>(CSR::Intervals):
-    return DeviceDriver::statusIntervals(handle, reg, count, buf);
+    return DeviceDriver::readIntervals(handle, reg, count, buf);
 
   case static_cast<int>(PeekRegister::AVG_INTERVALS):
-    return statusATI(handle, reg, count, buf);
+    return readATI(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
   }
 }
 
-int PeekDriver::control(int handle, int reg, int count, byte *buf) {
+int PeekDriver::write(int handle, int reg, int count, byte *buf) {
   PeekLUI *currentUnit = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
 
   case static_cast<int>(CCR::Intervals):
-    return DeviceDriver::controlIntervals(handle, reg, count, buf);
+    return DeviceDriver::writeIntervals(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
   }
-}
-
-int PeekDriver::read(int handle, int count, byte *buf) {
-  return ENOSYS;
-}
-int PeekDriver::write(int handle, int count, byte *buf) {
-  return ENOSYS;
 }
 
 int PeekDriver::close(int handle) {
@@ -117,7 +110,7 @@ int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r)
 
 //---------------------------------------------------------------------------
 
-int PeekDriver::statusATI(int handle, int reg, int count, byte *buf) {
+int PeekDriver::readATI(int handle, int reg, int count, byte *buf) {
   unsigned long avg;
   PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (cU == 0) return ENOTCONN;

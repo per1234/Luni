@@ -82,20 +82,12 @@ int DeviceTable::open(const char *name, int flags) {
   }
 }
 
-int DeviceTable::control(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->control(getUnitNumber(handle), reg, count, buf);
+int DeviceTable::write(int handle, int reg, int count, byte *buf) {
+  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), reg, count, buf);
 }
 
-int DeviceTable::status(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->status(getUnitNumber(handle), reg, count, buf);
-}
-
-int DeviceTable::read(int handle, int count, byte * buf) {
-  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), count, buf);
-}
-
-int DeviceTable::write(int handle, int count, byte * buf) {
-  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), count, buf);
+int DeviceTable::read(int handle, int reg, int count, byte *buf) {
+  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), reg, count, buf);
 }
 
 int DeviceTable::close(int handle) {

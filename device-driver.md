@@ -31,15 +31,15 @@ Some terms with specific meanings for this feature are *device*, *logical unit* 
 
 ###Device Driver API
 
-The Device Driver API includes six methods documented below.  The API is intended to be implemented by a device driver module on the server side (Firmata micro) exactly as written.  On the client side (client host), the same API calls should be implemented, but there will be small changes dictated by the syntax of the language used for the client.  Client-side proxy device drivers and server-side device drivers always use this API and never compose Firmata messages themselves, instead they rely on Firmata to do that.
+The Device Driver API includes four methods documented below.  The API is intended to be implemented by a device driver module on the server side (Firmata micro) exactly as written.  On the client side (client host), the same API calls should be implemented, but there will be small changes dictated by the syntax of the language used for the client.  Client-side proxy device drivers and server-side device drivers always use this API and never compose Firmata messages themselves, instead they rely on the client-side Firmata library to do that.
 
-In the most common architecture, the device driver implements the main device control code on the server and provides access using the specified API.  A proxy on the client also implements the API signatures, and acts as a bridge to the actual device driver and uses the Device Driver Sysex messages DEVICE\_QUERY and DEVICE\_RESPONSE to control the server side device driver, which in turn controls the component(s) using local capabilities.  In this scenario, the server side device driver receives the same calls and parameters as were provided to the proxy on the client.
+In the most common architecture, the device driver implements the main device control code on the server and provides access using the specified API.  A proxy on the client also implements the API signatures, and acts as a bridge to the actual device driver and uses the Device Driver Sysex messages DEVICE\_QUERY and DEVICE\_RESPONSE to control the server side device driver via Firmata, which in turn controls the component(s) using local capabilities.  In this scenario, the server side device driver receives the same calls and parameters as were provided to the proxy on the client.
 
 On the other hand, it is also possible for a device driver to implement the main control code on the client and provide access there using the same API. In this case the client device driver uses existing Firmata Features and commands as necessary to control the remote component(s) directly and according to the data sheet.  In this scenario, the server side Firmata responds to standard Firmata commands as received and there is no specific device driver needed on the server.
 
-####Device Status and Control Registers
+####Device Read and Write Registers
 
-The status and control methods operate based on register numbers.  On an actual device, physical register numbers usually start at 0 and max out at a relatively low value like 16 or 32, depending on the device.  This DeviceDriver API uses a 16-bit signed integer to identify the register of interest, so virtual quantities and actions can be implemented in addition to the actual physical device capabilities.
+The read and write methods operate based on register numbers.  On an actual device, physical register numbers usually start at 0 and max out at a relatively low value like 16 or 32, depending on the device.  This DeviceDriver API uses an 8-bit signed integer to identify the register of interest, so virtual quantities and actions can be implemented in addition to the actual physical device capabilities.
 
 ####Status Return from Methods
 
@@ -51,7 +51,7 @@ Two Sysex sub-commands are used by this feature: `DEVICE_QUERY` and `DEVICE_RESP
 
 There is a small set of action codes that specify what the driver is to do after it receives the message.  
 
-The first action is always `OPEN`.  The caller supplies a logical unit name that can be recognized by a device driver, and upon success, a handle is returned for use in future calls. After the handle has been received, the caller can read status (`STATUS`), write control (`CONTROL`), read data stream (`READ`), and write data stream (`WRITE`).  Once the caller has completed its operations on a device, it can use `CLOSE` to make the logical unit available for another client.
+The first action is always `OPEN`.  The caller supplies a logical unit name that can be recognized by a device driver, and upon success, a handle is returned for use in future calls. After the handle has been received, the caller can read status and data (`READ`) and write control and data (`WRITE`).  Once the caller has completed its operations on a device, it can use `CLOSE` to make the logical unit available for another client.
 
 The detailed message formats for each action are provided at the end of this document.
 
@@ -78,13 +78,13 @@ There are a few parameters whose values are constrained to 14-bit or 7-bit limit
 **return** *Success*: The newly assigned handle value.  The handle is used in future calls to indicate the device driver and specific device being addressed.  *Error*: error code.
 
 ---
-###Status
+###Read
 
-Read information from a register (or virtual register) in the device or device driver.  
+Read information from a register (or virtual register) in the device or device driver.
 
 The method and its parameters are as follows.
 
-    int status(int handle, int reg, int count, byte *buf)
+    int read(int handle, int reg, int count, byte *buf)
 
 **param** (in) `handle` The device driver selector value returned by Open in a previous call.
 
@@ -97,7 +97,7 @@ The method and its parameters are as follows.
 **return**  *Success*: The number of bytes actually read.  A short count does not in itself cause an error, since the caller can determine that not everything requested was read which may not actually be an error.  *Error*: error code.
 
 ---
-###Control
+###Write
 
     int control(int handle, int reg, int count, byte *buf)
 
@@ -108,32 +108,6 @@ The method and its parameters are as follows.
 **param** (in) `count` The number of bytes to write.
 
 **param** (in) `buf` Pointer to the buffer containing the data to write.
-
-**return**  *Success*: The number of bytes actually written.  Ordinarily, this will be equal to the requested number of bytes to write.  If it is short due to some device error (eg, physical write failure), then the driver will return an error code (eg, `EIO`).  However, under some unique circumstances for some drivers, it may be reasonable for a short count to occur in which case the driver will return the short count and no error code.  *Error*: error code.
-
----
-###Read
-
-    int read(int handle, int count, byte *buf)
-
-**param** (in) `handle` The device driver selector value returned by Open in a previous call.
-
-**param** (in) `count` The number of bytes to read.
-
-**param** (out) `buf` Pointer to the buffer to receive the data read.  Must be large enough to hold `count` bytes.
-
-**return**  *Success*: The number of bytes actually read.  A short count does not in itself cause an error, since the caller can determine that not everything requested was read which may not actually be an error.  *Error*: error code.
-
----
-###Write
-
-    int write(int handle, int count, byte *buf)
-
-**param** (in) `handle` The device driver selector value returned by Open in a previous call.
-
-**param** (in) `count` The number of bytes to write.
-
-**param** (in) `buf` Pointer to the buffer containing the data to write.  Must contain at least `count` bytes.
 
 **return**  *Success*: The number of bytes actually written.  Ordinarily, this will be equal to the requested number of bytes to write.  If it is short due to some device error (eg, physical write failure), then the driver will return an error code (eg, `EIO`).  However, under some unique circumstances for some drivers, it may be reasonable for a short count to occur in which case the driver will return the short count and no error code.  *Error*: error code.
 
@@ -184,11 +158,9 @@ The `DEVICE_QUERY` and `DEVICE_RESPONSE` message headers are Sysex message bytes
 These are 7-bit values, stored in Firmata `DEVICE_QUERY` and `DEVICE_RESPONSE` messages at offset 2.
 
     OPEN    (0x00)
-    STATUS  (0x01)
-    CONTROL (0x02)
-    READ    (0x03)
-    WRITE   (0x04)
-    CLOSE   (0x05)
+    READ    (0x01)
+    WRITE   (0x02)
+    CLOSE   (0x03)
 
 ####Flags or Handle
 
@@ -214,11 +186,11 @@ Note that the byte count returned by the various methods is the number of actual
 
 The parameter block contains the extra information needed to complete a request such as register numbers, byte counts, and the actual data read or written.  
 
-The parameter block is transmitted in the body of the message (all bytes after offset 7 except the final END\_SYSEX).  This block is encoded before transmission using an 8-bit to 7-bit encoder.  The standard encoder is Base-64.  This encode/decode is handled entirely by the Firmata libraries right before and after transmission of the Sysex messages and should not ordinarily be visible to the client application.
+The parameter block is transmitted in the body of the message (all bytes after offset 7 except the final `END_SYSEX`).  This block is encoded before transmission using an 8-bit to 7-bit encoder.  The encoder is Base-64.  This encode/decode is handled entirely by the Firmata libraries right before and after transmission of the Sysex messages and should not ordinarily be visible to the client application.
 
 Character strings are stored on the server in UTF-8.  All eight bits in a UTF-8 byte are significant.  A '0' in the high order bit indicates a character in the first group of 127 characters (the ASCII character set).  A '1' in the high order bit indicates that the byte is part of a multi-byte sequence. Unfortunately, it might also indicate a Firmata control byte.  Encoding in Base-64 avoids this problem.
 
-In the following message tables, the message contents are all shown one byte per row.  Remember that all bytes starting at offset 8 are encoded prior to transmission. The values shown in the tables below starting at offset 8 are **the 8-bit values before or after encoding / decoding**, they are **_not_** the 7-bit quantities that are actually transmitted.
+In the following message tables, the message contents are generally shown one byte per row.  Remember that all bytes after offset 7 (except the final `END_SYSEX`) are encoded prior to transmission. The values shown in the Parameter Block tables below are **the 8-bit values before or after encoding / decoding**, they are **_not_** the 7-bit quantities that are actually transmitted.
 
 ---
 
@@ -265,14 +237,14 @@ In the following message tables, the message contents are all shown one byte per
 >     8  END_SYSEX (0XF7)
 
 ---
-###Device Driver - Status
+###Device Driver - Read
 
 ####_Query_
 > **Message Header** (Plain text)
 > 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_QUERY (0x30)
->     2  0x01 (STATUS)
+>     2  0x01 (READ)
 >     3  0 (Reserved)
 >     4  handle (LSB)
 >     5  handle (MSB)
@@ -281,10 +253,9 @@ In the following message tables, the message contents are all shown one byte per
 > 
 > **Parameter Block** (encoded during transmission with Base-64)
  
->>     0  count (LSB)
->>     1  count (MSB) 
->>     2  register (LSB)
->>     3  register (MSB)
+>>     0  register
+>>     1  count requested (LSB)
+>>     2  count requested (MSB) 
  
 > **Message End** (Plain text)
 > 
@@ -292,12 +263,12 @@ In the following message tables, the message contents are all shown one byte per
 > 
 
 ####_Response_
+
 > **Message Header** (Plain text)
-> 
 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_RESPONSE (0x31)
->     2  0x01 (STATUS)
+>     2  0x01 (READ)
 >     3  0 (Reserved)
 >     4  handle (LSB)
 >     5  handle (MSB)
@@ -305,100 +276,15 @@ In the following message tables, the message contents are all shown one byte per
 >     7  return/status (MSB)
 > 
 > **Parameter Block** (encoded during transmission with Base-64)
->>     0..n Status data bytes read, if any
+> 
+>>     0  register
+>>     1  count requested (LSB)
+>>     2  count requested (MSB) 
+>>     3..n Status or data bytes read, if any
 >
 > **Message End** (Plain text)
 > 
 >     k  END_SYSEX (0XF7)
-
----
-###Device Driver - Control
-####_Query_
-
-> **Message Header** (Plain text)
-> 
->     0  START_SYSEX (0xF0)
->     1  DEVICE_QUERY (0x30)
->     2  0x02 (CONTROL)
->     3  0 (Reserved)
->     4  handle (LSB)
->     5  handle (MSB) 
->     6  0 (Reserved)
->     7  0 (Reserved)
->  
-> **Parameter Block** (encoded during transmission with Base-64)
-> 
->>     0  count (LSB)
->>     1  count (MSB) 
->>     2  register (LSB)
->>     3  register (MSB)
->>     4..n control bytes to write
->
-> **Message End** (Plain text)
-> 
->     k  END_SYSEX (0XF7)
-> 
-####_Response_
-
-> **Message Header** (Plain text)
-> 
->     0  START_SYSEX (0xF0)
->     1  DEVICE_RESPONSE (0x31)
->     2  0x02 (CONTROL)
->     3  0 (Reserved)
->     4  handle (LSB)
->     5  handle (MSB)
->     6  return/status (LSB)
->     7  return/status (MSB)
-> 
-> **Message End** (Plain text)
-> 
->     8  END_SYSEX (0XF7)
-
----
-###Device Driver - Read
-####_Query_
-> **Message Header** (Plain text)
-> 
->     0  START_SYSEX (0xF0)
->     1  DEVICE_QUERY (0x30)
->     2  0x03 (READ)
->     3  0 (Reserved)
->     4  handle (LSB)
->     5  handle (MSB)
->     6  0 (Reserved)
->     7  0 (Reserved)
->
-> **Parameter Block** (encoded during transmission with Base-64)
- 
->>     0  count (LSB)
->>     1  count (MSB) 
- 
-> **Message End** (Plain text)
-> 
->     12  END_SYSEX (0XF7)
-> 
-
-####_Response_
-> **Message Header** (Plain text)
-> 
-
->     0  START_SYSEX (0xF0)
->     1  DEVICE_RESPONSE (0x31)
->     2  0x03 (READ)
->     3  0 (Reserved)
->     4  handle (LSB)
->     5  handle (MSB)
->     6  return/status (LSB)
->     7  return/status (MSB)
-> 
-> **Parameter Block** (encoded during transmission with Base-64)
->>     0..n Data bytes read, if any
->
-> **Message End** (Plain text)
-> 
->     k  END_SYSEX (0XF7)
-
 
 ---
 ###Device Driver - Write
@@ -408,18 +294,19 @@ In the following message tables, the message contents are all shown one byte per
 > 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_QUERY (0x30)
->     2  0x04 (WRITE)
+>     2  0x02 (WRITE)
 >     3  0 (Reserved)
 >     4  handle (LSB)
->     5  handle (MSB)
+>     5  handle (MSB) 
 >     6  0 (Reserved)
 >     7  0 (Reserved)
-> 
+>  
 > **Parameter Block** (encoded during transmission with Base-64)
 > 
->>     0  count (LSB)
->>     1  count (MSB) 
->>     2..n data bytes to write
+>>     0  register
+>>     1  count requested (LSB)
+>>     2  count requested (MSB) 
+>>     3..n control bytes to write
 >
 > **Message End** (Plain text)
 > 
@@ -431,17 +318,22 @@ In the following message tables, the message contents are all shown one byte per
 > 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_RESPONSE (0x31)
->     2  0x04 (WRITE)
+>     2  0x02 (WRITE)
 >     3  0 (Reserved)
 >     4  handle (LSB)
 >     5  handle (MSB)
 >     6  return/status (LSB)
 >     7  return/status (MSB)
+>  
+> **Parameter Block** (encoded during transmission with Base-64)
+> 
+>>     0  register
+>>     1  count requested (LSB)
+>>     2  count requested (MSB) 
 > 
 > **Message End** (Plain text)
 > 
 >     8  END_SYSEX (0XF7)
-
 
 ---
 ###Device Driver - Close
@@ -452,7 +344,7 @@ In the following message tables, the message contents are all shown one byte per
 > 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_QUERY (0x30)
->     2  CLOSE (0x05)
+>     2  0x03 (CLOSE)
 >     3  0 (Reserved)
 >     4  handle (LSB)
 >     5  handle (MSB) 
@@ -469,7 +361,7 @@ In the following message tables, the message contents are all shown one byte per
 > 
 >     0  START_SYSEX (0xF0)
 >     1  DEVICE_RESPONSE (0x31)
->     2  CLOSE (0x05)
+>     2  0x03 (CLOSE)
 >     3  0 (Reserved)
 >     4  handle (LSB)
 >     5  handle (MSB) 
