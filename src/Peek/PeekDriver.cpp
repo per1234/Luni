@@ -86,7 +86,6 @@ int PeekDriver::close(int handle) {
 // and the useful samples are in 1..SAMPLE_COUNT.
 
 int PeekDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
-  unsigned long elapsedTime;
 
   PeekLUI *cU = static_cast<PeekLUI *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;

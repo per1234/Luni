@@ -152,7 +152,6 @@ int DeviceDriver::buildVersionResponse(const byte *semver, const char *name,
 
 unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timerIndex) {
   unsigned long elapsedTime;
-  int status;
 
   lui->currentTime[timerIndex] = (timerIndex == 0) ? micros() : millis();
 
