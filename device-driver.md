@@ -280,7 +280,7 @@ In the following message tables, the message contents are generally shown one by
 >>     0  register
 >>     1  count requested (LSB)
 >>     2  count requested (MSB) 
->>     3..n Status or data bytes read, if any
+>>     3..n Data bytes read, if any
 >
 > **Message End** (Plain text)
 > 
