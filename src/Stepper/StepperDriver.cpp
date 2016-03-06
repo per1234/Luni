@@ -231,7 +231,7 @@ int StepperDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r)
     // notify client application when stepping is complete
 
     if ((status == 2) && (currentUnit->buf[0] == 1)) {
-      r->reportRead(handle, status, &(currentUnit->buf[0]));
+      r->reportRead(status, handle, reg, 2, currentUnit->buf);
     }
     result = ESUCCESS;
     break;
