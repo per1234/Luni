@@ -5,7 +5,7 @@
  * HelloWorld component for device drivers and their usage.
  */
 
-DEFINE_SEMVER_PRE(HelloDriver, 0, 6, 0, beta)
+DEFINE_SEMVER_PRE(HelloDriver, 0, 7, 0, beta)
 
 //---------------------------------------------------------------------------
 

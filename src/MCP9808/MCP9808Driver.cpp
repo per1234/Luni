@@ -3,7 +3,7 @@
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER(MCP9808Driver, 0, 6, 0)
+DEFINE_SEMVER(MCP9808Driver, 0, 7, 0)
 
 /**
  * This device driver is for the Microchip Technology MCP9808 Digital

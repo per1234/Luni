@@ -2,7 +2,7 @@
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER(TableDriver, 0, 6, 0)
+DEFINE_SEMVER(TableDriver, 0, 7, 0)
 
 /**
  * This device driver provides access to the DeviceTable using the same basic

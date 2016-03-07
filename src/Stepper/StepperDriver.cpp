@@ -1,7 +1,7 @@
 #include "StepperDriver.h"
 #include "StepperDriverLUI.h"
 
-DEFINE_SEMVER(StepperDriver, 0, 6, 0)
+DEFINE_SEMVER(StepperDriver, 0, 7, 0)
 
 /**
  * This class defines a stepper motor device driver using the asynchronous

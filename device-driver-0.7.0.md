@@ -153,7 +153,7 @@ Remember that all bytes in the body of the message are encoded prior to transmis
 
 The layouts shown here determine the contents of the bytes visible during transmission, but the actual byte contents will be different due to the base-64 encoding.
 
-**Note**  Since there are 9 raw bytes in the common part of every message body, after encoding and during transmission each message body will start with a 12-byte encoded byte sequence.  The encoded data bytes, if any, will follow after that.
+**Note**  Since there are 9 raw bytes in the common part of every message body, after encoding and during transmission each message body starts with a 12-byte encoded byte sequence.  The encoded data bytes, if any, follow after that.
 
 ####DEVICE\_QUERY body
 
