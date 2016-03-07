@@ -2,7 +2,7 @@
 #include "TableDriver.h"
 #include "ClientReporter.h"
 
-DEFINE_SEMVER(DeviceTable, 0, 6, 0)
+DEFINE_SEMVER(DeviceTable, 0, 7, 0)
 
 /**
  * This DeviceTable class provides single point access to all the loaded
@@ -75,7 +75,7 @@ int DeviceTable::open(const char *name, int flags) {
     }
   }
   if (status >= 0) {
-    int handle =  ((deviceIndex & 0x7F) << 7) | (status & 0x7F);
+    int handle =  ((deviceIndex & 0xFF) << 8) | (status & 0xFF);
     return handle;
   } else {
     return status;

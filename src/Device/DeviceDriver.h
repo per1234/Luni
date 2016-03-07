@@ -14,8 +14,8 @@
 
 // Extract 7-bit index values from a 14-bit handle
 
-#define getUnitNumber(handle) ((handle) & 0x7F)
-#define getDeviceNumber(handle) (((handle) >> 7) & 0x7F)
+#define getUnitNumber(handle) ((handle) & 0xFF)
+#define getDeviceNumber(handle) (((handle) >> 8) & 0xFF)
 
 // Open() flags
 
