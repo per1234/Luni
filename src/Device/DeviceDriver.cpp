@@ -99,12 +99,6 @@ int DeviceDriver::writeIntervals(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::getFullHandle(int lun) {
-  return ((deviceNumber & 0x7F) << 7) | (lun & 0x7F);
-}
-
-//---------------------------------------------------------------------------
-
 int DeviceDriver::buildVersionResponse(const byte *semver, const char *name,
                                        const char *prLabel, const char *bLabel, int count, byte *buf) {
 

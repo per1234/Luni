@@ -45,7 +45,7 @@ There is a set of common register numbers defined that all device drivers can im
 
 ####Status Return from Methods
 
-Each of the device driver methods returns an `int` value to the caller.  If the value is negative, then the call failed and the value is an error code.  If the value is greater than or equal to 0, then the call succeeded.  The meaning of the non-negative value depends on the call.  For example, the `open` method returns a handle for future use and the `read` method returns the number of bytes read.  The details for each method are documented below.
+Each of the device driver methods returns a signed `int` value to the caller.  If the value is negative, then the call failed and the value is an error code.  If the value is greater than or equal to 0, then the call succeeded.  The meaning of the non-negative value depends on the call.  For example, the `open` method returns a handle for future use and the `read` method returns the number of bytes read.  The details for each method are documented below.
 
 ####Firmata Messages
 
@@ -127,7 +127,7 @@ The method and its parameters are as follows.
 
 The arguments provided by the caller of an API method are organized into a `DEVICE_QUERY` message on the client side by the proxy device driver, encoded in base-64, then transmitted to the server.  Firmata dispatches the Sysex message to the DeviceFeature module, which decodes it and dispatches the API call to the proper device driver.  After processing by the device driver, DeviceFeature captures the results and formats them as a `DEVICE_RESPONSE` message, then encodes and transmits the message back to the client host where the proxy device driver decodes the message and returns the result to the original caller.
 
-There are no restrictions on the values seen by the device drivers because those values are all encoded in Base-64 before transmission.
+There are no restrictions on the values seen by the device drivers due to Firmata because those values are all encoded in Base-64 before transmission.
 
 ###Message Header
 

@@ -225,7 +225,7 @@ int StepperDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r)
     if (motor == 0) return EBADFD;
 
     reg = static_cast<int>(Stepper::PositionEvent);
-    handle = DeviceDriver::getFullHandle(lun);
+    handle = makeHandle(deviceNumber,lun);
     status = readPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
 
     // notify client application when stepping is complete

@@ -75,8 +75,7 @@ int DeviceTable::open(const char *name, int flags) {
     }
   }
   if (status >= 0) {
-    int handle =  ((deviceIndex & 0xFF) << 8) | (status & 0xFF);
-    return handle;
+    return makeHandle(deviceIndex, status);
   } else {
     return status;
   }

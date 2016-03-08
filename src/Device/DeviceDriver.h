@@ -12,10 +12,14 @@
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"
 
-// Extract 7-bit index values from a 14-bit handle
+// Combine device number and unit number to get full handle
 
-#define getUnitNumber(handle) ((handle) & 0xFF)
-#define getDeviceNumber(handle) (((handle) >> 8) & 0xFF)
+#define makeHandle(DEVICE_NUMBER, UNIT_NUMBER) ((int)(((DEVICE_NUMBER & 0x7F) << 8) | (UNIT_NUMBER & 0x7F)))
+
+// Extract 7-bit index values from a 16-bit handle
+
+#define getUnitNumber(HANDLE) ((int)((HANDLE) & 0x7F))
+#define getDeviceNumber(HANDLE) ((int)(((HANDLE) >> 8) & 0x7F))
 
 // Open() flags
 
@@ -80,8 +84,6 @@ public:
     int checkForTimerEvents(ClientReporter *r);
 
 protected:
-
-    int getFullHandle(int lun);
 
     const char *rootName;
 
