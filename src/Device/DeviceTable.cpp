@@ -2,7 +2,7 @@
 #include "TableDriver.h"
 #include "ClientReporter.h"
 
-DEFINE_SEMVER(DeviceTable, 0, 1, 0)
+DEFINE_SEMVER(DeviceTable, 0, 7, 0)
 
 /**
  * This DeviceTable class provides single point access to all the loaded
@@ -75,27 +75,18 @@ int DeviceTable::open(const char *name, int flags) {
     }
   }
   if (status >= 0) {
-    int handle =  ((deviceIndex & 0x7F) << 7) | (status & 0x7F);
-    return handle;
+    return makeHandle(deviceIndex, status);
   } else {
     return status;
   }
 }
 
-int DeviceTable::control(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->control(getUnitNumber(handle), reg, count, buf);
+int DeviceTable::read(int handle, int reg, int count, byte *buf) {
+  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), reg, count, buf);
 }
 
-int DeviceTable::status(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->status(getUnitNumber(handle), reg, count, buf);
-}
-
-int DeviceTable::read(int handle, int count, byte * buf) {
-  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), count, buf);
-}
-
-int DeviceTable::write(int handle, int count, byte * buf) {
-  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), count, buf);
+int DeviceTable::write(int handle, int reg, int count, byte *buf) {
+  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), reg, count, buf);
 }
 
 int DeviceTable::close(int handle) {

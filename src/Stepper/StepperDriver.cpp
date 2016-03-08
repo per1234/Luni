@@ -1,7 +1,7 @@
 #include "StepperDriver.h"
 #include "StepperDriverLUI.h"
 
-DEFINE_SEMVER(StepperDriver, 0, 1, 0)
+DEFINE_SEMVER(StepperDriver, 0, 7, 0)
 
 /**
  * This class defines a stepper motor device driver using the asynchronous
@@ -47,7 +47,7 @@ int StepperDriver::open(const char *name, int flags) {
 /**
  * Read a status register on the device.
  */
-int StepperDriver::status(int handle, int reg, int count, byte *buf) {
+int StepperDriver::read(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
@@ -57,13 +57,13 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
            preReleaseLabel, buildLabel, count, buf);
 
   case static_cast<int>(CSR::Intervals):
-    return DeviceDriver::statusIntervals(handle, reg, count, buf);
+    return DeviceDriver::readIntervals(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::RPMSpeeds):
-    return statusRPMSpeeds(handle, reg, count, buf);
+    return readRPMSpeeds(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::PositionEvent):
-    return statusPositionEvent(handle, reg, count, buf);
+    return readPositionEvent(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -74,22 +74,22 @@ int StepperDriver::status(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::control(int handle, int reg, int count, byte *buf) {
+int StepperDriver::write(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
   case static_cast<int>(CCR::Configure):
-    return controlConfigure(handle, reg, count, buf);
+    return writeConfigure(handle, reg, count, buf);
 
   case static_cast<int>(CCR::Intervals):
-    return DeviceDriver::controlIntervals(handle, reg, count, buf);
+    return DeviceDriver::writeIntervals(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::MoveRelative):
-    return controlMoveRelative(handle, reg, count, buf);
+    return writeMoveRelative(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::RPMSpeeds):
-    return controlRPMSpeeds(handle, reg, count, buf);
+    return writeRPMSpeeds(handle, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -98,21 +98,13 @@ int StepperDriver::control(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::read(int handle, int count, byte *buf) {
-  return ENOSYS;
-}
-
-int StepperDriver::write(int handle, int count, byte *buf) {
-  return ENOSYS;
-}
-
 int StepperDriver::close(int handle) {
   return DeviceDriver::close(handle);
 }
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::statusRPMSpeeds(int handle, int reg, int count, byte *buf) {
+int StepperDriver::readRPMSpeeds(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *motor = currentUnit->getDeviceObject();
@@ -128,7 +120,7 @@ int StepperDriver::statusRPMSpeeds(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::statusPositionEvent(int handle, int reg, int count, byte *buf) {
+int StepperDriver::readPositionEvent(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *motor = currentUnit->getDeviceObject();
@@ -143,7 +135,7 @@ int StepperDriver::statusPositionEvent(int handle, int reg, int count, byte *buf
 
 //---------------------------------------------------------------------------
 
-int StepperDriver::controlConfigure(int handle, int reg, int count, byte *buf) {
+int StepperDriver::writeConfigure(int handle, int reg, int count, byte *buf) {
   int interface, stepCount, pin1, pin2, pin3, pin4;
   AsyncStepper *motor;
 
@@ -187,7 +179,7 @@ int StepperDriver::controlConfigure(int handle, int reg, int count, byte *buf) {
   return count;
 }
 
-int StepperDriver::controlRPMSpeeds(int handle, int reg, int count, byte *buf) {
+int StepperDriver::writeRPMSpeeds(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *motor = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
@@ -201,7 +193,7 @@ int StepperDriver::controlRPMSpeeds(int handle, int reg, int count, byte *buf) {
   return count;
 }
 
-int StepperDriver::controlMoveRelative(int handle, int reg, int count, byte *buf) {
+int StepperDriver::writeMoveRelative(int handle, int reg, int count, byte *buf) {
   StepperDriverLUI *currentUnit = static_cast<StepperDriverLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   AsyncStepper *motor = static_cast<AsyncStepper *>(currentUnit->getDeviceObject());
@@ -233,13 +225,13 @@ int StepperDriver::processTimerEvent(int lun, int timerIndex, ClientReporter *r)
     if (motor == 0) return EBADFD;
 
     reg = static_cast<int>(Stepper::PositionEvent);
-    handle = DeviceDriver::getFullHandle(lun);
-    status = statusPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
+    handle = makeHandle(deviceNumber,lun);
+    status = readPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
 
     // notify client application when stepping is complete
 
     if ((status == 2) && (currentUnit->buf[0] == 1)) {
-      r->reportStatus(handle, status, &(currentUnit->buf[0]));
+      r->reportRead(status, handle, reg, 2, currentUnit->buf);
     }
     result = ESUCCESS;
     break;

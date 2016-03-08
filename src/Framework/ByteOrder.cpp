@@ -42,32 +42,32 @@ void ByteOrder::x4BE(uint32_t src, uint8_t *dst) {
   dst[3] = (uint8_t)((src >> 0)  & 0xFFuL);
 }
 
-uint8_t ByteOrder::p1LE(uint8_t *src) {
-  return (uint8_t)(((uint16_t)(src[0])) & ((uint16_t)0x00FFu));
+int8_t ByteOrder::p1LE(uint8_t *src) {
+  return (int8_t)(((uint16_t)(src[0])) & ((uint16_t)0x00FFu));
 }
 
-uint8_t ByteOrder::p1BE(uint8_t *src) {
-  return (uint8_t)(((uint16_t)(src[0])) & ((uint16_t)0x00FFu));
+int8_t ByteOrder::p1BE(uint8_t *src) {
+  return (int8_t)(((uint16_t)(src[0])) & ((uint16_t)0x00FFu));
 }
 
-uint16_t ByteOrder::p2LE(uint8_t *src) {
-  return (uint16_t)(((src[1] & 0xFFuL) << 8) | (src[0] & 0xFFuL));
+int16_t ByteOrder::p2LE(uint8_t *src) {
+  return (int16_t)(((src[1] & 0xFFuL) << 8) | (src[0] & 0xFFuL));
 }
 
-uint16_t ByteOrder::p2BE(uint8_t *src) {
-  return (uint16_t)(((src[0] & 0xFFuL) << 8) | (src[1] & 0xFFuL));
+int16_t ByteOrder::p2BE(uint8_t *src) {
+  return (int16_t)(((src[0] & 0xFFuL) << 8) | (src[1] & 0xFFuL));
 }
 
-uint32_t ByteOrder::p4LE(uint8_t *src) {
-  return (uint32_t)(
+int32_t ByteOrder::p4LE(uint8_t *src) {
+  return (int32_t)(
     ((src[3] & 0xFFuL) << 24) |
     ((src[2] & 0xFFuL) << 16) |
     ((src[1] & 0xFFuL) << 8) |
     ((src[0] & 0xFFuL) << 0));
 }
 
-uint32_t ByteOrder::p4BE(uint8_t *src) {
-  return (uint32_t)(
+int32_t ByteOrder::p4BE(uint8_t *src) {
+  return (int32_t)(
     ((src[0] & 0xFFuL) << 24) |
     ((src[1] & 0xFFuL) << 16) |
     ((src[2] & 0xFFuL) << 8) |

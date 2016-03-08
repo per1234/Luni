@@ -75,7 +75,7 @@ int DeviceDriver::processTimerEvent(int lun, int timerSelector, ClientReporter *
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::readIntervals(int handle, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
@@ -87,7 +87,7 @@ int DeviceDriver::statusIntervals(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::controlIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::writeIntervals(int handle, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
@@ -95,12 +95,6 @@ int DeviceDriver::controlIntervals(int handle, int reg, int count, byte *buf) {
   currentUnit->intervalTime[0] = from32LEToHost(&buf[0]);
   currentUnit->intervalTime[1] = from32LEToHost(&buf[4]);
   return 8;
-}
-
-//---------------------------------------------------------------------------
-
-int DeviceDriver::getFullHandle(int lun) {
-  return ((deviceNumber & 0x7F) << 7) | (lun & 0x7F);
 }
 
 //---------------------------------------------------------------------------
@@ -152,7 +146,6 @@ int DeviceDriver::buildVersionResponse(const byte *semver, const char *name,
 
 unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timerIndex) {
   unsigned long elapsedTime;
-  int status;
 
   lui->currentTime[timerIndex] = (timerIndex == 0) ? micros() : millis();
 

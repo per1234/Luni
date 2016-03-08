@@ -20,10 +20,8 @@ public:
   StepperDriver(const char *dName, int addrCount);
 
   int open(const char *name, int flags = 0);
-  int status(int handle, int reg, int count, byte *buf);
-  int control(int handle, int reg, int count, byte *buf);
-  int read(int handle, int count, byte *buf);
-  int write(int handle, int count, byte *buf);
+  int read(int handle, int reg, int count, byte *buf);
+  int write(int handle, int reg, int count, byte *buf);
   int close(int handle);
 
   int processTimerEvent(int lun, int timerIndex, ClientReporter *r);
@@ -31,11 +29,11 @@ public:
 private:
   DECLARE_SEMVER
 
-  int controlConfigure(int handle, int reg, int count, byte *buf);
-  int controlMoveRelative(int handle, int reg, int count, byte *buf);
-  int controlRPMSpeeds(int handle, int reg, int count, byte *buf);
-  int statusRPMSpeeds(int handle, int reg, int count, byte *buf);
-  int statusPositionEvent(int handle, int reg, int count, byte *buf);
+  int writeConfigure(int handle, int reg, int count, byte *buf);
+  int writeMoveRelative(int handle, int reg, int count, byte *buf);
+  int writeRPMSpeeds(int handle, int reg, int count, byte *buf);
+  int readRPMSpeeds(int handle, int reg, int count, byte *buf);
+  int readPositionEvent(int handle, int reg, int count, byte *buf);
 
 };
 
