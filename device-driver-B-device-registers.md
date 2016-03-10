@@ -1,6 +1,6 @@
 
 ----------
-*tbd* 2016 V 0.6.0 beta.  Doug Johnson (finson@whidbey.com) 
+March 2016 V 0.7.0 beta.  Doug Johnson (finson@whidbey.com) 
 
 ----------
 
