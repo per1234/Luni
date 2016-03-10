@@ -3,7 +3,7 @@
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER(MCP9808Driver, 0, 7, 0)
+DEFINE_SEMVER_PRE(MCP9808Driver, 0, 7, 0, beta)
 
 /**
  * This device driver is for the Microchip Technology MCP9808 Digital
@@ -30,7 +30,7 @@ int MCP9808Driver::open(const char *name, int flags) {
   lun = status;
   MCP9808LUI *currentUnit = new MCP9808LUI(baseAddress + lun);
 
-  int address = currentUnit->getI2CAddress();
+  int address = currentUnit->i2cAddress;
   int theRegister = static_cast<int>(MCP9808Register::MANUF_ID);
   if (i2c.read16BE(address, theRegister) != 0x0054) {
     return ECONNREFUSED;
@@ -46,7 +46,7 @@ int MCP9808Driver::open(const char *name, int flags) {
 }
 
 /**
- * Read a status register on the device.
+ * Read a register on the device.
  */
 int MCP9808Driver::read(int handle, int reg, int count, byte *buf) {
   uint8_t v8;
@@ -55,8 +55,10 @@ int MCP9808Driver::read(int handle, int reg, int count, byte *buf) {
 
   MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
+  if (count < 0) return EINVAL;
 
-  int address = currentUnit->getI2CAddress();
+  int address = currentUnit->i2cAddress;
+
   switch (reg) {
 
   case static_cast<int>(CSR::DriverVersion):
@@ -64,8 +66,8 @@ int MCP9808Driver::read(int handle, int reg, int count, byte *buf) {
            preReleaseLabel, buildLabel, count, buf);
 
   case static_cast<int>(CSR::Stream):
-    if (count != 2) {
-      return EMSGSIZE;
+    if (count < 2) {
+      return EINVAL;
     }
     reg = static_cast<int>(MCP9808Register::AMBIENT_TEMP);
     v = i2c.read16BE(address, reg);
@@ -96,12 +98,11 @@ int MCP9808Driver::read(int handle, int reg, int count, byte *buf) {
 }
 
 int MCP9808Driver::write(int handle, int reg, int count, byte *buf) {
-  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
-  if (currentUnit == 0) {
-    return ENOTCONN;
-  }
 
-  int theI2CAddress = currentUnit->getI2CAddress();
+  MCP9808LUI *currentUnit = static_cast<MCP9808LUI *>(logicalUnits[getUnitNumber(handle)]);
+  if (currentUnit == 0) return ENOTCONN;
+
+  int theI2CAddress = currentUnit->i2cAddress;
   if (theI2CAddress < I2C_MIN_7BIT_ADDRESS || theI2CAddress > I2C_MAX_7BIT_ADDRESS) {
     return EBADFD;
   }
@@ -116,7 +117,7 @@ int MCP9808Driver::write(int handle, int reg, int count, byte *buf) {
       i2c.write16BE(theI2CAddress, reg, from16BEToHost(buf));
       return count;
     } else {
-      return EMSGSIZE;
+      return EINVAL;
     }
 
   case static_cast<int>(MCP9808Register::RESOLUTION):
@@ -124,7 +125,7 @@ int MCP9808Driver::write(int handle, int reg, int count, byte *buf) {
       i2c.write8BE(theI2CAddress, reg, from8BEToHost(buf));
       return count;
     } else {
-      return EMSGSIZE;
+      return EINVAL;
     }
 
   default:
