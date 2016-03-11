@@ -3,15 +3,13 @@
 
 class MCP9808LUI: public LogicalUnitInfo {
 
+friend class MCP9808Driver;
+
 public:
 
   MCP9808LUI(int addr) : LogicalUnitInfo(), i2cAddress(addr) {}
 
   ~MCP9808LUI() {}
-
-  const int getI2CAddress() {
-    return i2cAddress;
-  }
 
 private:
   int i2cAddress;

@@ -32,15 +32,16 @@ int HelloDriver::open(const char *name, int flags) {
 }
 
 /**
- * Read a status register on the device.
+ * Read a register on the device.
  */
 int HelloDriver::read(int handle, int reg, int count, byte *buf) {
 
   HelloLUI *currentUnit = static_cast<HelloLUI *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
-  if (count < 0) return EMSGSIZE;
+  if (count < 0) return EINVAL;
 
   switch (reg) {
+
   case static_cast<int>(CSR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
