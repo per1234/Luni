@@ -12,7 +12,7 @@ class DeviceTable {
     friend class TableDriver;
 
 public:
-    DeviceTable(DeviceDriver *deviceArray[], const char*luRootName=0);
+    DeviceTable(DeviceDriver *deviceArray[], const char*luRootName = 0);
     ~DeviceTable();
     void reset();
 
