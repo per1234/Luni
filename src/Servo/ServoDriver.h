@@ -3,7 +3,12 @@
 
 #include <Device/DeviceDriver.h>
 #include "ServoLUI.h"
-#include "ServoTypes.h"
+
+enum class ServoRegister : int {
+  PIN = 0,
+  SCALE = 1,
+  POSITION = 2
+};
 
 class ServoDriver: public DeviceDriver {
 
