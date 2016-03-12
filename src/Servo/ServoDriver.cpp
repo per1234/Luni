@@ -15,17 +15,13 @@ ServoDriver::ServoDriver(const char *dName, int lunCount) :
 
 int ServoDriver::open(const char *name, int flags) {
   int lun;
-  // int status = DeviceDriver::open(name, flags);
-  int status = DeviceDriver::open(name, 0);
+  int status = DeviceDriver::open(name, flags);
   if (status < 0) {
     return status;
   }
 
   lun = status;
   ServoLUI *currentUnit = new ServoLUI();
-
-  currentUnit->pin = flags;
-  currentUnit->attach(flags);
 
   logicalUnits[lun] = currentUnit;
   return lun;
@@ -80,6 +76,11 @@ int ServoDriver::write(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
+  case (int)(ServoRegister::PIN):
+    if (count != 2) return EMSGSIZE;
+    currentUnit->pin = from16LEToHost(buf);
+    return 2;
+
   case (int)(ServoRegister::SCALE):
     if (count != 4) return EMSGSIZE;
     currentUnit->fromLow = from16LEToHost(buf);
@@ -88,6 +89,8 @@ int ServoDriver::write(int handle, int reg, int count, byte *buf) {
 
   case (int)(ServoRegister::POSITION):
     if (count != 2) return EMSGSIZE;
+    if (currentUnit->pin == -1) return EBADFD;
+
     units = from16LEToHost(buf);
     degrees = map(units, currentUnit->fromLow, currentUnit->fromHigh, 0, 180);
     currentUnit->write(degrees);

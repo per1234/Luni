@@ -17,7 +17,8 @@ private:
 
   int fromLow = 0;
   int fromHigh = 180;
-  int pin;
+  int pin = -1;
+  int position = -1;
 
 };
 
