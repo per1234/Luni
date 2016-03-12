@@ -25,18 +25,24 @@
 
 #define DDO_FORCE_OPEN 0x01
 
-// These are the common register codes used by the DeviceDrivers in
-// their read() (CSR) and write() (CCR) methods.  Register names specific
-// to a particular device type are defined by the individual DeviceDrivers.
+// These are the common register identifiers used by the DeviceDrivers in their
+// read() (CSR, Common Status Register) and write() (CCR, Common Control Register)
+// methods.  Register identifiers specific to a particular device type are
+// defined by the individual DeviceDrivers.
+//
+// Register identifiers are 16-bit signed integers.
+//
+// There is no requirement that each DeviceDriver implement every common
+// register.S
 //
 // NOTE: Since a device driver knows whether it is performing a read()
 // call or a write() call independent of the register number, it is okay
 // if the CSR and CCR numeric values and/or names overlap as they will
 // not cause a conflict.
 //
-// NOTE:  The range of values -1..-128 is reserved for the common virtual
+// NOTE:  The range of values -1..-255 is reserved for the common virtual
 // register values.  Any virtual registers defined by a DeviceDriver must
-// fall in the range 0..128 to avoid conflict with the common registers.
+// fall outside of this range to avoid conflict with the common registers.
 // Obviously, any non-negative virtual register number must also avoid
 // conflict with the actual hardware device register numbers.
 
@@ -46,7 +52,7 @@ enum class CSR : int {
     Configure       = -3,   /* Get configuration of a logical unit number instance */
     Intervals       = -4,   /* Get current timer intervals for this device */
     Stream          = -5,   /* Read (or compose) bytes from the incoming data stream */
-    Debug           = -128  /* Do something helpful for debugging ... */
+    Debug           = -255  /* Do something helpful for debugging ... */
 };
 
 enum class CCR : int {
@@ -54,7 +60,7 @@ enum class CCR : int {
     Configure       = -3,   /* Set configuration of a logical unit number instance */
     Intervals       = -4,   /* Set current timer intervals for this device */
     Stream          = -5,   /* Write bytes to the outgoing character stream */
-    Debug           = -128  /* Do something helpful for debugging ... */
+    Debug           = -255  /* Do something helpful for debugging ... */
 };
 
 #define MAX_ROOT_NAME_LENGTH 32
