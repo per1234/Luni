@@ -42,11 +42,11 @@ int HelloDriver::read(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CSR::DriverVersion):
+  case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CSR::Stream):
+  case (int)(CDR::Stream):
     if ((size_t)count >= (strlen(currentUnit->getWho()) + strlen(currentUnit->getWhat()) + 4)) {
       buf[0] = (uint8_t)'\0';
       strcat((char *)buf, currentUnit->getWhat());

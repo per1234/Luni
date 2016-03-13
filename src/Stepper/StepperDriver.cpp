@@ -52,11 +52,11 @@ int StepperDriver::read(int handle, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-  case static_cast<int>(CSR::DriverVersion):
+  case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CSR::Intervals):
+  case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::RPMSpeeds):
@@ -79,10 +79,10 @@ int StepperDriver::write(int handle, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-  case static_cast<int>(CCR::Configure):
+  case (int)(CDR::Configure):
     return writeConfigure(handle, reg, count, buf);
 
-  case static_cast<int>(CCR::Intervals):
+  case (int)(CDR::Intervals):
     return DeviceDriver::writeIntervals(handle, reg, count, buf);
 
   case static_cast<int>(Stepper::MoveRelative):

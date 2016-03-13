@@ -42,7 +42,7 @@ int TableDriver::read(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CSR::DriverVersion):
+  case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName, preReleaseLabel, buildLabel, count, buf);
 
   default:

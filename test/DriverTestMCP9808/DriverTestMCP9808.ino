@@ -82,7 +82,7 @@ void setup() {
   status = dt->open("TempSensor:0");
   tst->assertTrue("Open error.", (status >= 0));
 
-  int reg = static_cast<int>(CSR::DriverVersion);
+  int reg = (int)(CDR::DriverVersion);
 
   if (status >= 0) {
     int handle = status;

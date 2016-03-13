@@ -47,11 +47,11 @@ int PeekDriver::read(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CSR::DriverVersion):
+  case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CSR::Intervals):
+  case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
 
   case static_cast<int>(PeekRegister::AVG_INTERVALS):
@@ -68,7 +68,7 @@ int PeekDriver::write(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CCR::Intervals):
+  case (int)(CDR::Intervals):
     return DeviceDriver::writeIntervals(handle, reg, count, buf);
 
   default:

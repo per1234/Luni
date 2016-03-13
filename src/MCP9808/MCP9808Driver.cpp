@@ -61,11 +61,11 @@ int MCP9808Driver::read(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(CSR::DriverVersion):
+  case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
-  case static_cast<int>(CSR::Stream):
+  case (int)(CDR::Stream):
     if (count < 2) {
       return EINVAL;
     }

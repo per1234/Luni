@@ -26,19 +26,13 @@
 #define DDO_FORCE_OPEN 0x01
 
 // These are the common register identifiers used by the DeviceDrivers in their
-// read() (CSR, Common Status Register) and write() (CCR, Common Control Register)
-// methods.  Register identifiers specific to a particular device type are
-// defined by the individual DeviceDrivers.
+// read() and write() methods.  Register identifiers specific to a particular
+// device type are defined by the individual DeviceDrivers.
 //
 // Register identifiers are 16-bit signed integers.
 //
 // There is no requirement that each DeviceDriver implement every common
-// register.S
-//
-// NOTE: Since a device driver knows whether it is performing a read()
-// call or a write() call independent of the register number, it is okay
-// if the CSR and CCR numeric values and/or names overlap as they will
-// not cause a conflict.
+// register.
 //
 // NOTE:  The range of values -1..-255 is reserved for the common virtual
 // register values.  Any virtual registers defined by a DeviceDriver must
@@ -46,20 +40,13 @@
 // Obviously, any non-negative virtual register number must also avoid
 // conflict with the actual hardware device register numbers.
 
-enum class CSR : int {
-    DriverVersion   = -1,   /* Get driver name and version */
-    LibraryVersion  = -2,   /* Get library name and version */
-    Configure       = -3,   /* Get configuration of a logical unit number instance */
-    Intervals       = -4,   /* Get current timer intervals for this device */
-    Stream          = -5,   /* Read (or compose) bytes from the incoming data stream */
-    Debug           = -255  /* Do something helpful for debugging ... */
-};
-
-enum class CCR : int {
+enum class CDR : int {
     Reset           = -1,   /* Reset all state in the device driver */
-    Configure       = -3,   /* Set configuration of a logical unit number instance */
-    Intervals       = -4,   /* Set current timer intervals for this device */
-    Stream          = -5,   /* Write bytes to the outgoing character stream */
+    DriverVersion   = -2,   /* Get driver name and version */
+    LibraryVersion  = -3,   /* Get library name and version */
+    Configure       = -4,   /* Get/set configuration of a logical unit number instance */
+    Intervals       = -5,   /* Get/set current timer intervals for this device */
+    Stream          = -6,   /* Read or write bytes using the "primary" data stream source or sink */
     Debug           = -255  /* Do something helpful for debugging ... */
 };
 
