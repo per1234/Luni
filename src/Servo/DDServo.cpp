@@ -42,6 +42,9 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
 
+  case (int)(CDR::Intervals):
+    return DeviceDriver::readIntervals(handle, reg, count, buf);
+
   case (int)(DDServo::REG::PIN):
     if (count < 2) return EMSGSIZE;
     if (!currentUnit->attached()) return ENODATA;
@@ -74,7 +77,7 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
 
 int DDServo::write(int handle, int reg, int count, byte *buf) {
   int thePin;
-  int channel;
+  uint8_t channel;
   int loPulse;
   int hiPulse;
   int pos;
@@ -91,7 +94,7 @@ int DDServo::write(int handle, int reg, int count, byte *buf) {
       currentUnit->detach();
     }
     channel = currentUnit->attach(thePin, currentUnit->minPulse, currentUnit->maxPulse);
-    if (channel == 0) return EIO;
+    if (channel == 255) return EIO;
     currentUnit->pin = thePin;
     return 2;
 
