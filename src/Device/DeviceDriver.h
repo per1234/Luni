@@ -82,6 +82,7 @@ protected:
 
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;
+
     int deviceNumber;        // the major handle value, ie index in the DeviceTable
 
     int buildVersionResponse(const byte *semver, const char *name,

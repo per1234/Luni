@@ -5,9 +5,15 @@
 DeviceDriver::DeviceDriver(const char *r, const int count) :
   rootName(r),
   logicalUnitCount(count),
-  logicalUnits(new LogicalUnitInfo * [count]()),
-  deviceNumber(0)
-{};
+  deviceNumber(0) {
+  logicalUnits = new LogicalUnitInfo *[count]();
+  if (logicalUnits = 0) {
+    logicalUnitCount = 0;
+  }
+  for (int idx = 0; idx < count; idx++) {
+    logicalUnits[idx] = 0;
+  }
+};
 
 //---------------------------------------------------------------------------
 
