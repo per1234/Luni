@@ -8,6 +8,7 @@
 
 #include <Framework/ByteOrder.h>
 #include <Framework/SemVer.h>
+#include <Framework/Boards.h>
 #include "ClientReporter.h"
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"

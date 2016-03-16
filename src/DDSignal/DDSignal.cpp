@@ -1,26 +1,18 @@
-#include "DDServo.h"
+#include "DDSignalDriver.h"
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER_PRE(DDServo, 0, 7, 0, beta)
+DEFINE_SEMVER_PRE(DDSignal, 0, 7, 0, beta)
 
 /**
- * This device driver is for servo controllers.  It uses the basic servo
- * library supplied with Arduino.
- *
- * Because the library uses up a slot index every time a Servo object is allocated,
- * and has no way to reclaim slot indexes no longer in use, this device driver
- * allocates LUServo objects for every available lun and then just points to them
- * in the logicalUnits pointer array when needed for open() and zeroes out the
- * pointer for close().
- *
- * If the memory allocations fail, logicalUnitCount is set to 0 and all calls to
- * the open() method for this device will fail with ENXIO, No such device or address.
+ * This device driver provides access to basic signal IO functions, including
+ * pinMode(), digitalWrite(), digitalRead(), analogReference(), analogRead(),
+ * and analogWrite().
  */
-DDServo::DDServo(const char *dName, int lunCount) :
+DDSignal::DDSignal(const char *dName, int lunCount) :
   DeviceDriver(dName, lunCount) {
   if (logicalUnitCount > 0) {
-    servos = new LUServo[logicalUnitCount];
+    servos = new LUSignal[logicalUnitCount];
     if (servos == 0) {
       delete logicalUnits;
       logicalUnitCount = 0;
@@ -33,7 +25,7 @@ DDServo::DDServo(const char *dName, int lunCount) :
 
 //---------------------------------------------------------------------------
 
-int DDServo::open(const char *name, int flags) {
+int DDSignal::open(const char *name, int flags) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -41,7 +33,7 @@ int DDServo::open(const char *name, int flags) {
   }
 
   lun = status;
-  LUServo *currentUnit = &servos[lun];
+  LUSignal *currentUnit = &servos[lun];
 
   currentUnit->detach();
   currentUnit->minPulse = MIN_PULSE_WIDTH;
@@ -53,10 +45,10 @@ int DDServo::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::read(int handle, int reg, int count, byte *buf) {
+int DDSignal::read(int handle, int reg, int count, byte *buf) {
   int units;
 
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
+  LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (count < 0) return EINVAL;
 
@@ -79,23 +71,23 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case (int)(DDServo::REG::PIN):
+  case (int)(DDSignal::REG::PIN):
     if (count < 2) return EMSGSIZE;
     fromHostTo16LE(currentUnit->pin, buf);
     return 2;
 
-  case (int)(DDServo::REG::RANGE_MICROSECONDS):
+  case (int)(DDSignal::REG::RANGE_MICROSECONDS):
     if (count < 4) return EMSGSIZE;
     fromHostTo16LE(currentUnit->minPulse, buf);
     fromHostTo16LE(currentUnit->maxPulse, buf + 2);
     return 4;
 
-  case (int)(DDServo::REG::POSITION_DEGREES):
+  case (int)(DDSignal::REG::POSITION_DEGREES):
     if (count < 2) return EMSGSIZE;
     fromHostTo16LE(currentUnit->read(), buf);
     return 2;
 
-  case (int)(DDServo::REG::POSITION_MICROSECONDS):
+  case (int)(DDSignal::REG::POSITION_MICROSECONDS):
     if (count < 2) return EMSGSIZE;
     fromHostTo16LE(currentUnit->readMicroseconds(), buf);
     return 2;
@@ -108,32 +100,30 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::write(int handle, int reg, int count, byte *buf) {
+int DDSignal::write(int handle, int reg, int count, byte *buf) {
   int thePin;
   uint8_t channel;
   int loPulse;
   int hiPulse;
   int pos;
 
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
+  LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
 
-  case (int)(DDServo::REG::PIN):
+  case (int)(DDSignal::REG::PIN):
     if (count != 2) return EMSGSIZE;
-    thePin = from16LEToHost(buf);
-    if (!(IS_PIN_PWM(thePin))) return EINVAL;
-
     if (currentUnit->attached()) {
       currentUnit->detach();
     }
+    thePin = from16LEToHost(buf);
     channel = currentUnit->attach(thePin, currentUnit->minPulse, currentUnit->maxPulse);
     if (channel == 255) return EMFILE;
     currentUnit->pin = thePin;
     return 2;
 
-  case (int)(DDServo::REG::RANGE_MICROSECONDS):
+  case (int)(DDSignal::REG::RANGE_MICROSECONDS):
     if (count != 4) return EMSGSIZE;
     loPulse = from16LEToHost(buf);
     hiPulse = from16LEToHost(buf + 2);
@@ -146,13 +136,13 @@ int DDServo::write(int handle, int reg, int count, byte *buf) {
     currentUnit->maxPulse = hiPulse;
     return 4;
 
-  case (int)(DDServo::REG::POSITION_DEGREES):
+  case (int)(DDSignal::REG::POSITION_DEGREES):
     if (count != 2) return EMSGSIZE;
     pos = from16LEToHost(buf);
     currentUnit->write(pos);
     return 2;
 
-  case (int)(DDServo::REG::POSITION_MICROSECONDS):
+  case (int)(DDSignal::REG::POSITION_MICROSECONDS):
     if (count != 2) return EMSGSIZE;
     pos = from16LEToHost(buf);
     currentUnit->writeMicroseconds(pos);
@@ -166,9 +156,9 @@ int DDServo::write(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::close(int handle) {
+int DDSignal::close(int handle) {
   int lun = getUnitNumber(handle);
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
+  LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[lun]);
   currentUnit->detach();
   logicalUnits[lun] = 0;
   return DeviceDriver::close(handle);
