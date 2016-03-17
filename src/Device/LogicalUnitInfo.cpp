@@ -11,3 +11,8 @@
   }
 
   LogicalUnitInfo::~LogicalUnitInfo() {}
+
+
+LogicalUnitInfo NULL_LUI;
+LogicalUnitInfo * const OPEN_BUT_NOT_CONFIGURED = &NULL_LUI;
+

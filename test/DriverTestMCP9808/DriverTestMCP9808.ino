@@ -123,11 +123,11 @@ void setup() {
       }
 
       switch (r) {
-        case static_cast<int>(MCP9808Register::MANUF_ID):
+        case static_cast<int>(REG::MANUF_ID):
           logger->info("Manufacturer ID: ", from16BEToHost(buf));
           tst->assertEquals("MCP9808 MANUF_ID assertEquals", 0x54, from16BEToHost(buf));
           break;
-        case static_cast<int>(MCP9808Register::DEVICE_ID):
+        case static_cast<int>(REG::DEVICE_ID):
           logger->info("Device ID: ", from16BEToHost(buf));
           tst->assertEquals("MCP9808 DEVICE_ID assertEquals", 0x400, from16BEToHost(buf));
           break;

@@ -4,7 +4,7 @@
 class LogicalUnitInfo {
 
   friend class DeviceDriver;
-  friend class PeekDriver;
+  friend class DDPeek;
 
 public:
   LogicalUnitInfo();
