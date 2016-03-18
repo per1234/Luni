@@ -1,39 +1,33 @@
-#include "DDPeek.h"
-#include <limits.h>
+#include "DDMeta.h"
 #include <Framework/ByteOrder.h>
+#include <limits.h>
 
-// #include <ConfigurableFirmata.h>
-// #define StringBufferSize 100
+DEFINE_SEMVER(DDMeta, 0, 8, 0)
 
 /**
- * This DDPeek class is an administrative and development tool to
- * provide code analysis capabilities and a place to perform timing
- * tests and the like.
+ * This DDMeta class is an administrative and development tool.  As a device
+ * driver, it provides an API for:
+ * <ul>
+ * <li>access to the DeviceTable (how many devices, device driver versions, etc)</li>
+ * <li>code analysis capabilities (memory usage, timing, etc)</li>
+ * </ul>
  */
-DEFINE_SEMVER(DDPeek, 0, 7, 0)
 
 //---------------------------------------------------------------------------
 
-DDPeek::DDPeek(const char *dName, int count) :
+DDMeta::DDMeta(const char *dName, int count) :
   DeviceDriver(dName, count) {
 }
 
 //---------------------------------------------------------------------------
 
-int DDPeek::open(const char *name, int flags) {
+int DDMeta::open(const char *name, int flags) {
   int lun;
   int status = DeviceDriver::open(name, flags);
-  if (status < 0) {
-    return status;
-  }
+  if (status < 0) return status;
 
   lun = status;
-  LUPeek *currentUnit = new LUPeek();
-
-  // for (int idx = 0; idx < 2; idx++) {
-  //   currentUnit->sampleIndex[idx] = 0;
-  //   currentUnit->isSampleBufferFull[idx] = false;
-  // }
+  LUMeta *currentUnit = new LUMeta();
 
   logicalUnits[lun] = currentUnit;
   return lun;
@@ -41,8 +35,8 @@ int DDPeek::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int DDPeek::read(int handle, int reg, int count, byte *buf) {
-  LUPeek *currentUnit = static_cast<LUPeek *>(logicalUnits[getUnitNumber(handle)]);
+int DDMeta::read(int handle, int reg, int count, byte *buf) {
+  LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -54,7 +48,7 @@ int DDPeek::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
 
-  case static_cast<int>(PeekRegister::AVG_INTERVALS):
+  case (int)(REG::AVG_INTERVALS):
     return readATI(handle, reg, count, buf);
 
   default:
@@ -62,8 +56,8 @@ int DDPeek::read(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDPeek::write(int handle, int reg, int count, byte *buf) {
-  LUPeek *currentUnit = static_cast<LUPeek *>(logicalUnits[getUnitNumber(handle)]);
+int DDMeta::write(int handle, int reg, int count, byte *buf) {
+  LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
@@ -76,7 +70,7 @@ int DDPeek::write(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDPeek::close(int handle) {
+int DDMeta::close(int handle) {
   return DeviceDriver::close(handle);
 }
 
@@ -85,9 +79,9 @@ int DDPeek::close(int handle) {
 // Collect duration samples.  The sample array is actually 0..SAMPLE_COUNT,
 // and the useful samples are in 1..SAMPLE_COUNT.
 
-int DDPeek::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
+int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
 
-  LUPeek *cU = static_cast<LUPeek *>(logicalUnits[getUnitNumber(lun)]);
+  LUMeta *cU = static_cast<LUMeta *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;
 
   switch (timerSelector) {
@@ -109,9 +103,9 @@ int DDPeek::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
 
 //---------------------------------------------------------------------------
 
-int DDPeek::readATI(int handle, int reg, int count, byte *buf) {
+int DDMeta::readATI(int handle, int reg, int count, byte *buf) {
   unsigned long avg;
-  LUPeek *cU = static_cast<LUPeek *>(logicalUnits[getUnitNumber(handle)]);
+  LUMeta *cU = static_cast<LUMeta *>(logicalUnits[getUnitNumber(handle)]);
   if (cU == 0) return ENOTCONN;
 
   if (count < 8) return EMSGSIZE;

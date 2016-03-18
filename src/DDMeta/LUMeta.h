@@ -1,16 +1,16 @@
-#ifndef LUPeek_h
-#define LUPeek_h
+#ifndef LUMeta_h
+#define LUMeta_h
 
 #define SAMPLE_COUNT 16
 
-class LUPeek: public LogicalUnitInfo {
+class LUMeta: public LogicalUnitInfo {
 
-friend class DDPeek;
+friend class DDMeta;
 
 public:
 
-    LUPeek() : LogicalUnitInfo() {}
-    ~LUPeek() {}
+    LUMeta() : LogicalUnitInfo() {}
+    ~LUMeta() {}
 
 private:
 

@@ -1,5 +1,4 @@
 #include "DeviceTable.h"
-#include "TableDriver.h"
 #include "ClientReporter.h"
 
 DEFINE_SEMVER(DeviceTable, 0, 7, 0)
@@ -13,11 +12,11 @@ DEFINE_SEMVER(DeviceTable, 0, 7, 0)
  *
  * Note that generally speaking a caller should use either DeviceTable methods
  * or direct calls to DeviceDriver objects, but not both.  This is because the
- * 14-bit handles returned by DeviceTable contain both a device index value and
+ * 16-bit handles returned by DeviceTable contain both a device index value and
  * a logical unit index value, whereas the 7-bit handles returned by the
  * DeviceDrivers themselves contain only a logical unit value.
  */
-DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
+DeviceTable::DeviceTable(DeviceDriver *deviceArray[]) {
 
   deviceCount = 0;
   if (deviceArray == 0) {
@@ -25,11 +24,9 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
     return;
   }
 
-  bool enableTableDriver = (luRootName != 0);
   while (deviceArray[deviceCount] != 0) {
     deviceCount += 1;
   }
-  deviceCount = (enableTableDriver) ? deviceCount + 1 : deviceCount;
 
   devices = new DeviceDriver*[deviceCount];
   if (devices == 0) {
@@ -42,23 +39,15 @@ DeviceTable::DeviceTable(DeviceDriver *deviceArray[], const char*luRootName) {
       devices[idx]->deviceNumber = idx;
       idx += 1;
     }
-
-    if (enableTableDriver) {
-      DeviceDriver *metaDriver = new TableDriver(this, luRootName, 1);
-      if (metaDriver == 0) {
-        free(devices);
-        deviceCount = 0;
-      } else {
-        devices[idx] = metaDriver;
-        devices[idx]->deviceNumber = idx;
-      }
-    }
   }
 }
 
 DeviceTable::~DeviceTable() {}
 
 void DeviceTable::reset() {
+  for (int idx = 0; idx < deviceCount; idx++) {
+    devices[idx]->reset();
+  }
 }
 
 //---------------------------------------------------------------------------

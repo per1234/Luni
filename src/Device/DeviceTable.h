@@ -9,10 +9,10 @@
 
 class DeviceTable {
 
-    friend class TableDriver;
+    friend class DDMeta;
 
 public:
-    DeviceTable(DeviceDriver *deviceArray[], const char*luRootName = 0);
+    DeviceTable(DeviceDriver *deviceArray[]);
     ~DeviceTable();
     void reset();
 

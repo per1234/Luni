@@ -4,7 +4,7 @@
 class LogicalUnitInfo {
 
   friend class DeviceDriver;
-  friend class DDPeek;
+  friend class DDMeta;              // in order to have access to the intervalTimes
 
 public:
   LogicalUnitInfo();
