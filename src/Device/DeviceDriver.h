@@ -62,7 +62,7 @@ enum class CDR : int {
 
 class DeviceDriver {
 
-    friend class DeviceTable;
+    friend class DeviceTable;       // in order to set deviceNumber
 
 public:
 
@@ -74,8 +74,9 @@ public:
     virtual int close(int handle) = 0;
 
     virtual int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
+    virtual void reset();
 
-    int checkForTimerEvents(ClientReporter *r);
+    virtual int checkForTimerEvents(ClientReporter *r) final;
 
 protected:
 

@@ -54,6 +54,18 @@ int DeviceDriver::close(int handle) {
 
 //---------------------------------------------------------------------------
 
+// Any subclass of DeviceDriver that requires additional functionality in its
+// processTimerEvent() or reset() methods should override these implementations
+// appropriately.
+
+int DeviceDriver::processTimerEvent(int lun, int timerSelector, ClientReporter * r) {
+  return ESUCCESS;
+}
+
+void DeviceDriver::reset() {}
+
+//---------------------------------------------------------------------------
+
 int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
   int status;
   int result = ESUCCESS;
@@ -74,11 +86,6 @@ int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
   }
   return result;
 }
-
-int DeviceDriver::processTimerEvent(int lun, int timerSelector, ClientReporter * r) {
-  return ESUCCESS;
-}
-
 //---------------------------------------------------------------------------
 
 int DeviceDriver::readIntervals(int handle, int reg, int count, byte *buf) {
