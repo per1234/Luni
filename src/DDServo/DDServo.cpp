@@ -54,8 +54,6 @@ int DDServo::open(const char *name, int flags) {
 //---------------------------------------------------------------------------
 
 int DDServo::read(int handle, int reg, int count, byte *buf) {
-  int units;
-
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (count < 0) return EINVAL;
