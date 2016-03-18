@@ -2,7 +2,6 @@
 #define DDHello_h
 
 #include <Device/DeviceDriver.h>
-#include "DDHello.h"
 #include "LUHello.h"
 
 #define MAX_HELLO_TEXT_LENGTH 31

@@ -58,11 +58,11 @@ int DDHello::read(int handle, int reg, int count, byte *buf) {
       return EMSGSIZE;
     }
 
-  case static_cast<int>(REG::INTERJECTION):
+  case (int)(REG::INTERJECTION):
     strlcpy((char *)buf, currentUnit->getWhat(), count);
     return strlen(currentUnit->getWhat());
 
-  case static_cast<int>(REG::OBJECT):
+  case (int)(REG::OBJECT):
     strlcpy((char *)buf, currentUnit->getWho(), count);
     return strlen(currentUnit->getWho());
 
