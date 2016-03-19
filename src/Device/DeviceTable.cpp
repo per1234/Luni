@@ -1,8 +1,6 @@
 #include "DeviceTable.h"
 #include "ClientReporter.h"
 
-DEFINE_SEMVER(DeviceTable, 0, 7, 0)
-
 /**
  * This DeviceTable class provides single point access to all the loaded
  * DeviceDriver objects.  The open() method is used to identify the driver of

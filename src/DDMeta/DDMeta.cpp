@@ -1,6 +1,11 @@
 #include "DDMeta.h"
+#include <Device/DeviceTable.h>
 #include <Framework/ByteOrder.h>
 #include <limits.h>
+
+//---------------------------------------------------------------------------
+
+extern DeviceTable *Device;
 
 DEFINE_SEMVER(DDMeta, 0, 8, 0)
 
@@ -12,9 +17,6 @@ DEFINE_SEMVER(DDMeta, 0, 8, 0)
  * <li>code analysis capabilities (memory usage, timing, etc)</li>
  * </ul>
  */
-
-//---------------------------------------------------------------------------
-
 DDMeta::DDMeta(const char *dName, int count) :
   DeviceDriver(dName, count) {
 }
@@ -47,6 +49,14 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
 
   case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
+
+  case (int)(REG::DRIVER_COUNT):
+    if (count < 2) return EMSGSIZE;
+    fromHostTo16LE(Device->deviceCount, buf);
+    return 2;
+
+  case (int)(REG::INSTALLED_DRIVERS):
+    return readATI(handle, reg, count, buf);
 
   case (int)(REG::AVG_INTERVALS):
     return readATI(handle, reg, count, buf);

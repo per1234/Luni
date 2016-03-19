@@ -59,7 +59,6 @@ enum class CDR : int {
 #define MINIMUM_REPORT_INTERVAL 10     // milliseconds
 #define DEFAULT_REPORT_INTERVAL 19
 
-
 class DeviceDriver {
 
     friend class DeviceTable;       // in order to set deviceNumber
