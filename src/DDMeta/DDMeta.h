@@ -19,9 +19,9 @@ public:
   int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
 
   enum class REG : int {
-    DRIVER_COUNT = 0,
-    INSTALLED_DRIVERS = 1,
-    AVG_INTERVALS = 2
+    AVG_INTERVALS = 0,
+    DRIVER_COUNT = 1,
+    DRIVER_VERSION_LIST = 2
   };
 
 private:

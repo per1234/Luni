@@ -86,11 +86,10 @@ protected:
 
     int deviceNumber;        // the major handle value, ie index in the DeviceTable
 
-    int buildVersionResponse(const byte *semver, const char *name,
-                             const char *prLabel, const char *bLabel, int count, byte *buf);
-
     int writeIntervals(int handle, int reg, int count, byte *buf);
     int readIntervals(int handle, int reg, int count, byte *buf);
+    int buildVersionResponse(const byte *semver, const char *name,
+                             const char *prLabel, const char *bLabel, int count, byte *buf);
 
 private:
 

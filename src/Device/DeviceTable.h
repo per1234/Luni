@@ -12,7 +12,7 @@ class DeviceTable {
     friend class DDMeta;        // in order to read deviceCount and devices
 
 public:
-    DeviceTable(DeviceDriver *deviceArray[]);
+    DeviceTable(DeviceDriver *deviceArray[], ClientReporter *reporter);
     ~DeviceTable();
 
     int open(const char *name, int flags = 0);
@@ -20,13 +20,15 @@ public:
     int write(int handle, int reg, int count, byte *buf);
     int close(int handle);
 
-    int dispatchTimers(ClientReporter *obj);
+    int dispatchTimers();
     void reset();
 
 private:
 
     int deviceCount;
     DeviceDriver **devices;
+
+    ClientReporter *cr;             // for use by DDMeta
 
 };
 

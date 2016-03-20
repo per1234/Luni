@@ -14,7 +14,9 @@
  * a logical unit index value, whereas the 7-bit handles returned by the
  * DeviceDrivers themselves contain only a logical unit value.
  */
-DeviceTable::DeviceTable(DeviceDriver *deviceArray[]) {
+DeviceTable::DeviceTable(DeviceDriver *deviceArray[], ClientReporter *reporter) {
+
+  cr = reporter;
 
   deviceCount = 0;
   if (deviceArray == 0) {
@@ -69,23 +71,23 @@ int DeviceTable::open(const char *name, int flags) {
 }
 
 int DeviceTable::read(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->read(getUnitNumber(handle), reg, count, buf);
+  return devices[getDeviceNumber(handle)]->read(handle, reg, count, buf);
 }
 
 int DeviceTable::write(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->write(getUnitNumber(handle), reg, count, buf);
+  return devices[getDeviceNumber(handle)]->write(handle, reg, count, buf);
 }
 
 int DeviceTable::close(int handle) {
-  return devices[getDeviceNumber(handle)]->close(getUnitNumber(handle));
+  return devices[getDeviceNumber(handle)]->close(handle);
 }
 
 //----------------------------------------------------------------------------
 
-int DeviceTable::dispatchTimers(ClientReporter *reporter) {
+int DeviceTable::dispatchTimers() {
   int result = ESUCCESS;
   for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-    int status = devices[deviceIndex]->checkForTimerEvents(reporter);
+    int status = devices[deviceIndex]->checkForTimerEvents(cr);
     result = (status < 0) ? status : result;
   }
   return result;
