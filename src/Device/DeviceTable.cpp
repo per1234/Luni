@@ -71,15 +71,21 @@ int DeviceTable::open(const char *name, int flags) {
 }
 
 int DeviceTable::read(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->read(handle, reg, count, buf);
+  int deviceIndex = getDeviceNumber(handle);
+  if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
+  return devices[deviceIndex]->read(handle, reg, count, buf);
 }
 
 int DeviceTable::write(int handle, int reg, int count, byte *buf) {
-  return devices[getDeviceNumber(handle)]->write(handle, reg, count, buf);
+  int deviceIndex = getDeviceNumber(handle);
+  if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
+  return devices[deviceIndex]->write(handle, reg, count, buf);
 }
 
 int DeviceTable::close(int handle) {
-  return devices[getDeviceNumber(handle)]->close(handle);
+  int deviceIndex = getDeviceNumber(handle);
+  if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
+  return devices[deviceIndex]->close(handle);
 }
 
 //----------------------------------------------------------------------------

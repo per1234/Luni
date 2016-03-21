@@ -36,15 +36,22 @@ int DDHello::open(const char *name, int flags) {
  */
 int DDHello::read(int handle, int reg, int count, byte *buf) {
 
-  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[getUnitNumber(handle)]);
-  if (currentUnit == 0) return ENOTCONN;
-  if (count < 0) return EINVAL;
+  // First, handle connection-optional requests
 
   switch (reg) {
 
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
+  }
+
+  // Second, deal with connection-required requests
+
+  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[getUnitNumber(handle)]);
+  if (currentUnit == 0) return ENOTCONN;
+  if (count < 0) return EINVAL;
+
+  switch (reg) {
 
   case (int)(CDR::Stream):
     if ((size_t)count >= (strlen(currentUnit->getWho()) + strlen(currentUnit->getWhat()) + 4)) {
@@ -78,11 +85,11 @@ int DDHello::write(int handle, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(REG::INTERJECTION):
+  case (int)(REG::INTERJECTION):
     currentUnit->setWhat((char *)buf);
     return strlen(currentUnit->getWhat());
 
-  case static_cast<int>(REG::OBJECT):
+  case (int)(REG::OBJECT):
     currentUnit->setWho((char *)buf);
     return strlen(currentUnit->getWho());
 
