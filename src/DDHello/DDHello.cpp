@@ -31,9 +31,8 @@ int DDHello::open(const char *name, int flags) {
   return lun;
 }
 
-/**
- * Read a register on the device.
- */
+//---------------------------------------------------------------------------
+
 int DDHello::read(int handle, int reg, int count, byte *buf) {
 
   // First, handle connection-optional requests
@@ -43,13 +42,17 @@ int DDHello::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
-  }
+
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildReadPrefixResponse(count,buf);
+ }
 
   // Second, deal with connection-required requests
 
-  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[getUnitNumber(handle)]);
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
-  if (count < 0) return EINVAL;
 
   switch (reg) {
 
@@ -80,7 +83,19 @@ int DDHello::read(int handle, int reg, int count, byte *buf) {
 
 int DDHello::write(int handle, int reg, int count, byte *buf) {
 
-  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[getUnitNumber(handle)]);
+  // First, handle connection-optional requests
+
+  switch (reg) {
+
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildWritePrefixResponse(count,buf);
+  }
+
+  // Second, deal with connection-required requests
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {

@@ -39,7 +39,6 @@ int DDMeta::open(const char *name, int flags) {
 
 int DDMeta::read(int handle, int reg, int count, byte *buf) {
   int status;
-  int lun;
   byte versionBuffer[256];
 
   // First, handle connection-optional requests
@@ -49,12 +48,14 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
            preReleaseLabel, buildLabel, count, buf);
+
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildReadPrefixResponse(count,buf);
   }
 
   // Second, deal with connection-required requests
 
-
-  lun = getUnitNumber(handle);
+  int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
@@ -85,7 +86,22 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
 }
 
 int DDMeta::write(int handle, int reg, int count, byte *buf) {
-  LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[getUnitNumber(handle)]);
+  int unitNameLength;
+
+  // First, handle connection-optional requests
+
+  switch (reg) {
+
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildWritePrefixResponse(count,buf);
+  }
+
+  // Second, deal with connection-required requests
+
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {

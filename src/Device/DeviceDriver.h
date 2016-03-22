@@ -45,13 +45,14 @@ enum class CDR : int {
     Reset           = -1,   /* Reset all state in the device driver */
     DriverVersion   = -2,   /* Get driver name and version */
     LibraryVersion  = -3,   /* Get library name and version */
-    Configure       = -4,   /* Get/set configuration of a logical unit number instance */
-    Intervals       = -5,   /* Get/set current timer intervals for this device */
-    Stream          = -6,   /* Read or write bytes using the "primary" data stream source or sink */
+    UnitNamePrefix  = -4,   /* Get/set the name with which the units of this device are opened */
+    Configure       = -5,   /* Get/set configuration of a logical unit number instance */
+    Intervals       = -6,   /* Get/set current timer intervals for this device */
+    Stream          = -7,   /* Read or write bytes using the "primary" data stream source or sink */
     Debug           = -255  /* Do something helpful for debugging ... */
 };
 
-#define MAX_ROOT_NAME_LENGTH 32
+#define MAX_UNIT_NAME_LENGTH 32
 
 #define MINIMUM_UPDATE_INTERVAL 100    // microseconds
 #define DEFAULT_UPDATE_INTERVAL 200
@@ -79,7 +80,9 @@ public:
 
 protected:
 
-    const char *rootName;
+    char *unitNamePrefix;
+    int buildReadPrefixResponse(int count, byte *buf);
+    int buildWritePrefixResponse(int count, const byte *newPrefix);
 
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;

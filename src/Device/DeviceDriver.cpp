@@ -3,9 +3,9 @@
 //---------------------------------------------------------------------------
 
 DeviceDriver::DeviceDriver(const char *r, const int count) :
-  rootName(r),
+  unitNamePrefix((char *)r),
   logicalUnitCount(count),
-  logicalUnits(new LogicalUnitInfo *[count]),
+  logicalUnits(new LogicalUnitInfo * [count]),
   deviceNumber(0) {
   if (logicalUnits == 0) {
     logicalUnitCount = 0;
@@ -20,12 +20,12 @@ DeviceDriver::DeviceDriver(const char *r, const int count) :
 int DeviceDriver::open(const char *name, int flags) {
   int lun;
 
-  size_t unitNameLength = strcspn(name, ":");
-  if ((strlen(rootName) != unitNameLength) || (strncmp(rootName, name, unitNameLength) != 0)) {
+  int prefixLength = strcspn(name, ":");
+  if ((strlen(unitNamePrefix) != prefixLength) || (strncmp(unitNamePrefix, name, prefixLength) != 0)) {
     return ENODEV;
   }
 
-  lun = atoi(&name[unitNameLength + 1]);
+  lun = atoi(&name[prefixLength + 1]);
   if (lun < 0 || lun >= logicalUnitCount) {
     return ENXIO;
   }
@@ -50,6 +50,21 @@ int DeviceDriver::close(int handle) {
     logicalUnits[getUnitNumber(handle)] = 0;
   }
   return ESUCCESS;
+}
+
+//---------------------------------------------------------------------------
+
+int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
+  if (count < strlen(unitNamePrefix)+1) return EMSGSIZE;
+  int copyCount = strlcpy((char *)buf,unitNamePrefix,count);
+  return copyCount;
+}
+
+int DeviceDriver::buildWritePrefixResponse(int count, const byte *newPrefix) {
+  free(unitNamePrefix);
+  unitNamePrefix = strdup((char *)newPrefix);
+  if (unitNamePrefix == 0) return ENOMEM;
+  return strlen(unitNamePrefix);
 }
 
 //---------------------------------------------------------------------------
