@@ -79,8 +79,10 @@ public:
     virtual int checkForTimerEvents(ClientReporter *r) final;
 
 protected:
+    DECLARE_VERSION
 
     char *unitNamePrefix;
+
     int buildReadPrefixResponse(int count, byte *buf);
     int buildWritePrefixResponse(int count, const byte *newPrefix);
 
@@ -91,8 +93,7 @@ protected:
 
     int writeIntervals(int handle, int reg, int count, byte *buf);
     int readIntervals(int handle, int reg, int count, byte *buf);
-    int buildVersionResponse(const byte *semver, const char *name,
-                             const char *prLabel, const char *bLabel, int count, byte *buf);
+    int buildVersionResponse(int count, byte *buf);
 
 private:
 

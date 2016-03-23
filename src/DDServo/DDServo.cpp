@@ -2,7 +2,6 @@
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER_PRE(DDServo, 0, 7, 0, beta)
 
 /**
  * This device driver is for servo controllers.  It uses the basic servo
@@ -19,6 +18,8 @@ DEFINE_SEMVER_PRE(DDServo, 0, 7, 0, beta)
  */
 DDServo::DDServo(const char *dName, int lunCount) :
   DeviceDriver(dName, lunCount) {
+  DEFINE_VERSION_PRE(0, 8, 0, beta)
+
   if (logicalUnitCount > 0) {
     servos = new LUServo[logicalUnitCount];
     if (servos == 0) {
@@ -63,8 +64,7 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-           preReleaseLabel, buildLabel, count, buf);
+    return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);

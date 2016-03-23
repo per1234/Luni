@@ -34,7 +34,6 @@ enum class REG : int {
 };
 
 private:
-  DECLARE_SEMVER
 
   int writeConfigure(int handle, int reg, int count, byte *buf);
   int writeMoveRelative(int handle, int reg, int count, byte *buf);

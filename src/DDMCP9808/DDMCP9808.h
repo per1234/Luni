@@ -28,8 +28,6 @@ public:
   };
 
 private:
-  DECLARE_SEMVER
-
   int baseAddress;
   I2CPort i2c;
 

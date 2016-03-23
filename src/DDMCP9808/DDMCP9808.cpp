@@ -3,7 +3,6 @@
 
 //---------------------------------------------------------------------------
 
-DEFINE_SEMVER_PRE(DDMCP9808, 0, 7, 0, beta)
 
 /**
  * This device driver is for the Microchip Technology MCP9808 Digital
@@ -16,7 +15,9 @@ DEFINE_SEMVER_PRE(DDMCP9808, 0, 7, 0, beta)
 DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
   baseAddress(baseI2CAddress),
-  i2c() {}
+  i2c() {
+  DEFINE_VERSION_PRE(0, 8, 0, beta)
+}
 
 //---------------------------------------------------------------------------
 
@@ -53,6 +54,13 @@ int DDMCP9808::read(int handle, int reg, int count, byte *buf) {
   uint16_t v16;
   int v;
 
+  switch (reg) {
+
+  case (int)(CDR::DriverVersion):
+    return DeviceDriver::buildVersionResponse(count, buf);
+
+  }
+
   LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (count < 0) return EINVAL;
@@ -60,10 +68,6 @@ int DDMCP9808::read(int handle, int reg, int count, byte *buf) {
   int address = currentUnit->i2cAddress;
 
   switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-           preReleaseLabel, buildLabel, count, buf);
 
   case (int)(CDR::Stream):
     if (count < 2) {

@@ -7,7 +7,6 @@
 
 extern DeviceTable *Device;
 
-DEFINE_SEMVER(DDMeta, 0, 8, 0)
 
 /**
  * This DDMeta class is an administrative and development tool.  As a device
@@ -19,6 +18,7 @@ DEFINE_SEMVER(DDMeta, 0, 8, 0)
  */
 DDMeta::DDMeta(const char *dName, int count) :
   DeviceDriver(dName, count) {
+  DEFINE_VERSION_PRE(0, 8, 0, beta)
 }
 
 //---------------------------------------------------------------------------
@@ -46,8 +46,7 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-           preReleaseLabel, buildLabel, count, buf);
+    return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildReadPrefixResponse(count,buf);
@@ -97,7 +96,6 @@ int DDMeta::write(int handle, int reg, int count, byte *buf) {
   }
 
   // Second, deal with connection-required requests
-
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;

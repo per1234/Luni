@@ -1,53 +1,43 @@
 #ifndef SemVer_h
 #define SemVer_h
 
-// Put call to DECLARE_SEMVER in the declaration file xx.h in the private
-// section of the device driver class declaration.  For example:
-//
-// class TrialDriver {
-// public:
-//   int yada();
-// private:
-//   DECLARE_SEMVER
-// };
+// There is ONE call to DECLARE_VERSION in DeviceDriver.h in the protected
+// section of the class declaration.
 
-#define DECLARE_SEMVER \
-static const PROGMEM uint8_t releaseVersion[];\
-static const PROGMEM char scopeName[];\
-static const PROGMEM char preReleaseLabel[];\
-static const PROGMEM char buildLabel[];
+#define DECLARE_VERSION \
+uint8_t releaseVersion[4] {3,0,0,0};\
+const char* scopeName {"ABCDEF"};\
+char* preReleaseLabel {"p"};\
+char* buildLabel {"b"};
 
-// Put call to DEFINE_SEMVER in the definition file xx.cpp, but outside
-// of any constructor or method.  For example:
-//
-// DEFINE_SEMVER(TrialDriver, 0, 7, 0)
-//
-// Note that the scopeName argument is NOT a string literal and so has no
-// quotes around it in the call to the macro.  It is stringified where
-// necessary in the body of the macro.
-//
+// Put call to DEFINE_VERSION as a line in the device driver constructor.
 // A pre-release label and a build meta-data label can be added using
-// alternate forms of the DEFINE macro.  For example:
+// alternate forms of the macro.  For example:
 //
-// DEFINE_SEMVER_PRE(TrialDriver,0,5,0,beta)
-// DEFINE_SEMVER_PRE_BLD(TrialDriver,0,5,0,beta,__DATE__)
+// DEFINE_VERSION(0,8,1)
+// DEFINE_VERSION_PRE(0,5,0,beta)
+// DEFINE_VERSION_PRE_BLD(0,5,0,beta,__DATE__)
 
-#define DEFINE_SEMVER(theScopeName, major, minor, patch) \
-DEFINE_SEMVER_ALL(theScopeName, major, minor, patch,,)
+#define DEFINE_VERSION(major, minor, patch) \
+DEFINE_VERSION_ALL(major, minor, patch,,)
 
-#define DEFINE_SEMVER_PRE(theScopeName, major, minor, patch,prLabel) \
-DEFINE_SEMVER_ALL(theScopeName, major, minor, patch,prLabel,)
+#define DEFINE_VERSION_PRE(major, minor, patch,prLabel) \
+DEFINE_VERSION_ALL(major, minor, patch,prLabel,)
 
-#define DEFINE_SEMVER_BLD(theScopeName, major, minor, patch,bLabel) \
-DEFINE_SEMVER_ALL(theScopeName, major, minor, patch,,bLabel)
+#define DEFINE_VERSION_BLD(major, minor, patch,bLabel) \
+DEFINE_VERSION_ALL(major, minor, patch,,bLabel)
 
-#define DEFINE_SEMVER_PRE_BLD(theScopeName, major, minor, patch, prLabel, bLabel) \
-DEFINE_SEMVER_ALL(theScopeName, major, minor, patch, prLabel, bLabel)
+#define DEFINE_VERSION_PRE_BLD(major, minor, patch, prLabel, bLabel) \
+DEFINE_VERSION_ALL(major, minor, patch, prLabel, bLabel)
 
-#define DEFINE_SEMVER_ALL(theScopeName, major, minor, patch,prLabel,bLabel) \
-const PROGMEM uint8_t theScopeName::releaseVersion[] = {3, major, minor, patch};\
-const PROGMEM char theScopeName::scopeName[] = {#theScopeName}; \
-const PROGMEM char theScopeName::preReleaseLabel[] = {#prLabel}; \
-const PROGMEM char theScopeName::buildLabel[] = {#bLabel};
+#define DEFINE_VERSION_ALL(major, minor, patch,prLabel,bLabel) \
+releaseVersion[0]= 3; \
+releaseVersion[1]= (uint8_t)major; \
+releaseVersion[2]= (uint8_t)minor; \
+releaseVersion[3]= (uint8_t)patch; \
+scopeName = (const char *)__func__; \
+preReleaseLabel = #prLabel; \
+buildLabel = #bLabel;
+
 
 #endif

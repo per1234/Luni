@@ -22,8 +22,6 @@ public:
   };
 
 private:
-  DECLARE_SEMVER
-
   LUServo *servos;
 };
 

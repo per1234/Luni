@@ -1,10 +1,7 @@
 #include "DDStepper.h"
 #include "LUStepper.h"
 
-DEFINE_SEMVER(DDStepper, 0, 7, 0)
-
 extern LogicalUnitInfo * const OPEN_BUT_NOT_CONFIGURED;
-
 
 /**
  * This class defines a stepper motor device driver using the asynchronous
@@ -26,6 +23,7 @@ extern LogicalUnitInfo * const OPEN_BUT_NOT_CONFIGURED;
 
 DDStepper::DDStepper(const char *dName, int addrCount) :
   DeviceDriver(dName, addrCount) {
+  DEFINE_VERSION_PRE(0, 8, 0, beta)
 }
 
 //---------------------------------------------------------------------------
@@ -48,14 +46,17 @@ int DDStepper::open(const char *name, int flags) {
  * Read a status register on the device.
  */
 int DDStepper::read(int handle, int reg, int count, byte *buf) {
+
+  switch (reg) {
+  case (int)(CDR::DriverVersion):
+    return DeviceDriver::buildVersionResponse(count, buf);
+  }
+
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
 
   switch (reg) {
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-           preReleaseLabel, buildLabel, count, buf);
 
   case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
@@ -205,7 +206,7 @@ int DDStepper::writeMoveRelative(int handle, int reg, int count, byte *buf) {
   int actualSpeedRequested = (currentUnit->speedMaxRPM <= 0) ? (int)(currentUnit->speedRPM) :
                              (int)(constrain(currentUnit->speedRPM, 0, currentUnit->speedMaxRPM));
   currentUnit->setStepsToMove((int)from32LEToHost(buf), actualSpeedRequested,
-                        (int)currentUnit->accelRPM, (int)currentUnit->decelRPM);
+                              (int)currentUnit->accelRPM, (int)currentUnit->decelRPM);
   return count;
 }
 
@@ -225,7 +226,7 @@ int DDStepper::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
   case 0:     // microsecond timer
 
     reg = (int)(REG::PositionEvent);
-    handle = makeHandle(deviceNumber,lun);
+    handle = makeHandle(deviceNumber, lun);
     status = readPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
 
     // notify client application when stepping is complete

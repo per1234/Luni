@@ -25,8 +25,6 @@ public:
   };
 
 private:
-  DECLARE_SEMVER
-
   const DeviceTable *theDeviceTable;
 
   int readATI(int handle, int reg, int count, byte *buf);

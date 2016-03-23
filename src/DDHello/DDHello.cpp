@@ -5,17 +5,16 @@
  * HelloWorld component for device drivers and their usage.
  */
 
-DEFINE_SEMVER_PRE(DDHello, 0, 7, 0, beta)
 
 //---------------------------------------------------------------------------
 
-DDHello::DDHello(const char *dName, int count) :
-  DeviceDriver(dName, count) {}
+DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
+  DEFINE_VERSION_PRE(0, 8, 0, beta)
+}
 
 //---------------------------------------------------------------------------
 
 int DDHello::open(const char *name, int flags) {
-
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -40,8 +39,7 @@ int DDHello::read(int handle, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(releaseVersion, scopeName,
-           preReleaseLabel, buildLabel, count, buf);
+    return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildReadPrefixResponse(count,buf);

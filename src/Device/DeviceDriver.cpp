@@ -2,14 +2,15 @@
 
 //---------------------------------------------------------------------------
 
-DeviceDriver::DeviceDriver(const char *r, const int count) :
-  unitNamePrefix((char *)r),
+DeviceDriver::DeviceDriver(const char *pre, const int count) :
+  unitNamePrefix((char *)pre),
   logicalUnitCount(count),
-  logicalUnits(new LogicalUnitInfo * [count]),
-  deviceNumber(0) {
-  if (logicalUnits == 0) {
+  logicalUnits(new LogicalUnitInfo * [count]) {
+
+  if (logicalUnits == 0) {  // out of memory
     logicalUnitCount = 0;
   }
+
   for (int idx = 0; idx < logicalUnitCount; idx++) {
     logicalUnits[idx] = 0;
   }
@@ -50,21 +51,6 @@ int DeviceDriver::close(int handle) {
     logicalUnits[getUnitNumber(handle)] = 0;
   }
   return ESUCCESS;
-}
-
-//---------------------------------------------------------------------------
-
-int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
-  if (count < strlen(unitNamePrefix)+1) return EMSGSIZE;
-  int copyCount = strlcpy((char *)buf,unitNamePrefix,count);
-  return copyCount;
-}
-
-int DeviceDriver::buildWritePrefixResponse(int count, const byte *newPrefix) {
-  free(unitNamePrefix);
-  unitNamePrefix = strdup((char *)newPrefix);
-  if (unitNamePrefix == 0) return ENOMEM;
-  return strlen(unitNamePrefix);
 }
 
 //---------------------------------------------------------------------------
@@ -127,44 +113,62 @@ int DeviceDriver::writeIntervals(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::buildVersionResponse(const byte *semver, const char *name,
-                                       const char *prLabel, const char *bLabel, int count, byte *buf) {
+int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
+  int scopeLength = strlen(scopeName);
+  int prefixLength = strlen(unitNamePrefix);
+  if (count < (scopeLength + prefixLength + 2)) return EMSGSIZE;
 
-  int nameLength = strlen_P(name);
-  int prLength = strlen_P(prLabel);
-  int bLength = strlen_P(bLabel);
+  buf[0] = 0;
+  strcat((char *)buf, scopeName);
+  strcat((char *)buf, unitNamePrefix);
+  return scopeLength + prefixLength + 2;
+}
 
-  int packetSize = pgm_read_byte_near(&semver[0]);
+int DeviceDriver::buildWritePrefixResponse(int count, const byte *newPrefix) {
+  free(unitNamePrefix);
+  unitNamePrefix = strdup((char *)newPrefix);
+  if (unitNamePrefix == 0) return ENOMEM;
+  return strlen(unitNamePrefix);
+}
+
+//---------------------------------------------------------------------------
+
+int DeviceDriver::buildVersionResponse(int count, byte *buf) {
+
+  int packetSize = releaseVersion[0];
+  int nameLength = strlen(scopeName);
+  int prLength = strlen(preReleaseLabel);
+  int bLength = strlen(buildLabel);
 
   if (count < (1 + packetSize + nameLength + 1 + prLength + 1 + bLength + 1)) {
     return EMSGSIZE;
   }
 
   int byteIndex = 0;
-  buf[byteIndex++] = packetSize;
 
   // version
 
+  buf[byteIndex++] = packetSize;
   for (int idx = 0; idx < packetSize; idx++) {
-    buf[byteIndex++] = pgm_read_byte_near(&semver[idx + 1]);
+    buf[byteIndex++] = releaseVersion[idx + 1];
   }
 
   // preReleaseLabel (including terminating null)
 
   for (int idx = 0; idx <= prLength; idx++) {
-    buf[byteIndex++] = pgm_read_byte_near(&prLabel[idx]);
+    buf[byteIndex++] = preReleaseLabel[idx];
   }
 
   // buildLabel (including terminating null)
 
   for (int idx = 0; idx <= bLength; idx++) {
-    buf[byteIndex++] = pgm_read_byte_near(&bLabel[idx]);
+    buf[byteIndex++] = buildLabel[idx];
   }
 
   // name (including terminating null)
 
   for (int idx = 0; idx <= nameLength; idx++) {
-    buf[byteIndex++] = pgm_read_byte_near(&name[idx]);
+    buf[byteIndex++] = scopeName[idx];
   }
 
   return byteIndex;
