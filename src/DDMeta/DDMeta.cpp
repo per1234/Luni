@@ -50,7 +50,26 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
 
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildReadPrefixResponse(count,buf);
-  }
+
+  case (int)(REG::DRIVER_COUNT):
+    if (count < 2) return EMSGSIZE;
+    fromHostTo16LE(Device->deviceCount, buf);
+    return 2;
+
+  case (int)(REG::DRIVER_VERSION_LIST):
+    for (int idx=0; idx<Device->deviceCount; idx++) {
+      status = Device->read(makeHandle(idx,0), (int)(CDR::DriverVersion), 256, versionBuffer);
+      Device->cr->reportRead(status, handle, (int)(CDR::DriverVersion), 256, versionBuffer);
+    }
+    return ESUCCESS;
+
+  case (int)(REG::UNIT_NAME_PREFIX_LIST):
+    for (int idx=0; idx<Device->deviceCount; idx++) {
+      status = Device->read(makeHandle(idx,0), (int)(CDR::UnitNamePrefix), 256, versionBuffer);
+      Device->cr->reportRead(status, handle, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
+    }
+    return ESUCCESS;
+}
 
   // Second, deal with connection-required requests
 
@@ -66,18 +85,6 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
 
   case (int)(REG::AVG_INTERVALS):
     return readATI(handle, reg, count, buf);
-
-  case (int)(REG::DRIVER_VERSION_LIST):
-    for (int idx=0; idx<Device->deviceCount; idx++) {
-      status = Device->read(makeHandle(idx,0), (int)(CDR::DriverVersion), 256, versionBuffer);
-      Device->cr->reportRead(status, handle, (int)(CDR::DriverVersion), 256, versionBuffer);
-    }
-    return ESUCCESS;
-
-  case (int)(REG::DRIVER_COUNT):
-    if (count < 2) return EMSGSIZE;
-    fromHostTo16LE(Device->deviceCount, buf);
-    return 2;
 
   default:
     return ENOTSUP;

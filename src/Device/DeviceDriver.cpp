@@ -120,7 +120,7 @@ int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
 
   buf[0] = 0;
   strcat((char *)buf, scopeName);
-  strcat((char *)buf, unitNamePrefix);
+  strcat((char *)buf+scopeLength+1, unitNamePrefix);
   return scopeLength + prefixLength + 2;
 }
 

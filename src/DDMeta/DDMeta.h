@@ -21,7 +21,8 @@ public:
   enum class REG : int {
     AVG_INTERVALS = 0,
     DRIVER_COUNT = 1,
-    DRIVER_VERSION_LIST = 2
+    DRIVER_VERSION_LIST = 2,
+    UNIT_NAME_PREFIX_LIST = 3
   };
 
 private:
