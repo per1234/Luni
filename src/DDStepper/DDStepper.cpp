@@ -50,6 +50,9 @@ int DDStepper::read(int handle, int reg, int count, byte *buf) {
   switch (reg) {
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(count, buf);
+
+  case (int)(CDR::UnitNamePrefix):
+    return DeviceDriver::buildReadPrefixResponse(count, buf);
   }
 
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);

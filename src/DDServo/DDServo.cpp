@@ -66,6 +66,9 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(count, buf);
 
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildReadPrefixResponse(count,buf);
+
   case (int)(CDR::Intervals):
     return DeviceDriver::readIntervals(handle, reg, count, buf);
 

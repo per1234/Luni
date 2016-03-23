@@ -146,6 +146,12 @@ int DeviceDriver::buildVersionResponse(int count, byte *buf) {
 
   int byteIndex = 0;
 
+  // name (including terminating null)
+
+  for (int idx = 0; idx <= nameLength; idx++) {
+    buf[byteIndex++] = scopeName[idx];
+  }
+
   // version
 
   buf[byteIndex++] = packetSize;
@@ -163,12 +169,6 @@ int DeviceDriver::buildVersionResponse(int count, byte *buf) {
 
   for (int idx = 0; idx <= bLength; idx++) {
     buf[byteIndex++] = buildLabel[idx];
-  }
-
-  // name (including terminating null)
-
-  for (int idx = 0; idx <= nameLength; idx++) {
-    buf[byteIndex++] = scopeName[idx];
   }
 
   return byteIndex;

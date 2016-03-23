@@ -59,6 +59,9 @@ int DDMCP9808::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::DriverVersion):
     return DeviceDriver::buildVersionResponse(count, buf);
 
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildReadPrefixResponse(count,buf);
+
   }
 
   LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[getUnitNumber(handle)]);
