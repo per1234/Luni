@@ -42,7 +42,7 @@
 // conflict with the actual hardware device register numbers.
 
 enum class CDR : int {
-    Reset           = -1,   /* Reset all state in the device driver */
+    Reset           = -1,   /* Reset all state in the device driver for the specified unit number */
     DriverVersion   = -2,   /* Get driver name and version */
     LibraryVersion  = -3,   /* Get library name and version */
     UnitNamePrefix  = -4,   /* Get/set the name with which the units of this device are opened */
