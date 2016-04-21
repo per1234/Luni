@@ -7,11 +7,16 @@
  * This device driver is for servo controllers.  It uses the basic servo
  * library supplied with Arduino.
  *
+ * Information needed by the device driver about each attached servo is held in
+ * an object of the LUServo class.  The LUServo class extends the Servo class
+ * that the library itself uses for maintaining the detailed state of each
+ * attached servo.
+ *
  * Because the library uses up a slot index every time a Servo object is allocated,
  * and has no way to reclaim slot indexes no longer in use, this device driver
- * allocates LUServo objects for every available lun and then just points to them
- * in the logicalUnits pointer array when needed for open() and zeroes out the
- * pointer for close().
+ * constructor allocates an LUServo object for every available lun and then just
+ * points to them in the logicalUnits pointer array when needed for open() and
+ * zeroes out the pointer for close().
  *
  * If the memory allocations fail, logicalUnitCount is set to 0 and all calls to
  * the open() method for this device will fail with ENXIO, No such device or address.
@@ -55,11 +60,8 @@ int DDServo::open(const char *name, int flags) {
 //---------------------------------------------------------------------------
 
 int DDServo::read(int handle, int reg, int count, byte *buf) {
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
-  if (currentUnit == 0) return ENOTCONN;
-  if (count < 0) return EINVAL;
 
-  // Registers for which no pin attachment is needed
+  // Registers for which no handle is needed
 
   switch (reg) {
 
@@ -69,12 +71,25 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildReadPrefixResponse(count,buf);
 
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, reg, count, buf);
+  }
+
+  //  Registers for which we must have a handle (ie, open() has
+  //  been done) but we don't need to be attached to a pin
+
+  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
+  if (currentUnit == 0) return ENOTCONN;
+  if (count < 0) return EINVAL;
+
+  switch (reg) {
+
+    case (int)(CDR::Intervals):
+      return DeviceDriver::readIntervals(handle, reg, count, buf);
 
   }
 
-  //  Registers for which we must be attached to a pin (and thus a servo)
+  //  Registers for which we must have a handle (ie, open() has
+  //  been done) and we need to be attached to a pin (and thus
+  //  a servo)
 
   if (!currentUnit->attached()) return ENODATA;
 

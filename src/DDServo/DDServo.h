@@ -15,10 +15,10 @@ public:
   int close(int handle);
 
   enum class REG : int {
-    PIN = 0,
-    RANGE_MICROSECONDS = 1,
-    POSITION_DEGREES = 2,
-    POSITION_MICROSECONDS = 3
+    PIN = 256,
+    RANGE_MICROSECONDS = 257,
+    POSITION_DEGREES = 258,
+    POSITION_MICROSECONDS = 259
   };
 
 private:

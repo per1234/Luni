@@ -38,8 +38,11 @@
 // NOTE:  The range of values -1..-255 is reserved for the common virtual
 // register values.  Any virtual registers defined by a DeviceDriver must
 // fall outside of this range to avoid conflict with the common registers.
-// Obviously, any non-negative virtual register number must also avoid
-// conflict with the actual hardware device register numbers.
+//
+// NOTE:  The range of values from 0..255 is reserved for identifying actual
+// physical registers on a device.  Any virtual register numbers defined by a
+// DeviceDriver must fall outside this range to avoid conflict with the
+// physical registers.
 
 enum class CDR : int {
     Reset           = -1,   /* Reset all state in the device driver for the specified unit number */
@@ -49,6 +52,8 @@ enum class CDR : int {
     Configure       = -5,   /* Get/set configuration of a logical unit number instance */
     Intervals       = -6,   /* Get/set current timer intervals for this device */
     Stream          = -7,   /* Read or write bytes using the "primary" data stream source or sink */
+    Manufacturer    = -8,   /* Get the manufacturer id associated with the device (PCiSIG, ?, ?) */
+    DeviceID        = -9,   /* Unique ID for the component attached to the open unit number */
     Debug           = -255  /* Do something helpful for debugging ... */
 };
 
