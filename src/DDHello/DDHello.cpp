@@ -4,8 +4,6 @@
  * This class defines a simple device driver as a sort of
  * HelloWorld component for device drivers and their usage.
  */
-
-
 //---------------------------------------------------------------------------
 
 DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
