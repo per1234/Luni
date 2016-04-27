@@ -73,10 +73,10 @@ public:
 
     DeviceDriver(const char *nameRoot, const int count);
 
-    virtual int open(const char *name, int flags) = 0;
-    virtual int read(int handle, int reg, int count, byte *buf) = 0;
-    virtual int write(int handle, int reg, int count, byte *buf) = 0;
-    virtual int close(int handle) = 0;
+    virtual int open(const char *name, int flags, int opts) = 0;
+    virtual int read(int handle, int flags, int reg, int count, byte *buf) = 0;
+    virtual int write(int handle, int flags, int reg, int count, byte *buf) = 0;
+    virtual int close(int handle, int flags) = 0;
 
     virtual int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
     virtual void reset();

@@ -14,7 +14,7 @@ DDSensor::DDSensor(const char *dName, int lunCount) :
 
 //---------------------------------------------------------------------------
 
-int DDSensor::open(const char *name, int flags) {
+int DDSensor::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -31,7 +31,7 @@ int DDSensor::open(const char *name, int flags) {
 /**
  * Read a register on the device.
  */
-int DDSensor::read(int handle, int reg, int count, byte *buf) {
+int DDSensor::read(int handle, int flags, int reg, int count, byte *buf) {
   uint8_t v8;
   uint16_t v16;
   int v;
@@ -93,7 +93,7 @@ int DDSensor::read(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDSensor::write(int handle, int reg, int count, byte *buf) {
+int DDSensor::write(int handle, int flags, int reg, int count, byte *buf) {
   int thePin;
 
   LUSensor *currentUnit = static_cast<LUSensor *>(logicalUnits[getUnitNumber(handle)]);
@@ -126,6 +126,6 @@ int DDSensor::write(int handle, int reg, int count, byte *buf) {
   return EPANIC;
 }
 
-int DDSensor::close(int handle) {
+int DDSensor::close(int handle, int flags) {
   return DeviceDriver::close(handle);
 }

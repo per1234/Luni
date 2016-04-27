@@ -13,7 +13,8 @@ March 2016 v0.8 Device Drivers for Arduino and Firmata
 * **Done** v0.8 Take interval expiration code out of DeviceTable and put in DeviceDriver
 * **Done** v0.8 Add separate DeviceTableDriver object to the driver list during DeviceTable initialization and use it for things like "status() - list of installed drivers"  [implemented in DDMeta]
 * **Started** v0.8 Johnny 5 drivers and tests
-* v0.8 Write and test Servo device driver, client API
+* **Done** v0.8 Write and test Servo device driver, j-5 client API
+* v0.8 Write and test MCP9808 device driver, j-5 client API
 * v0.8 Generate and receive async messages (Sensor, MCP9808, Stepper, Meta)
 * v0.8 extended ACTIONs: Read (continuous fast, continuous slow, once)
 * v0.8 Write and test Stepper device driver, client API

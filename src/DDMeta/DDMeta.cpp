@@ -23,7 +23,7 @@ DDMeta::DDMeta(const char *dName, int count) :
 
 //---------------------------------------------------------------------------
 
-int DDMeta::open(const char *name, int flags) {
+int DDMeta::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) return status;
@@ -37,7 +37,7 @@ int DDMeta::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int DDMeta::read(int handle, int reg, int count, byte *buf) {
+int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
   int status;
   byte versionBuffer[256];
 
@@ -91,7 +91,7 @@ int DDMeta::read(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDMeta::write(int handle, int reg, int count, byte *buf) {
+int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
   int unitNameLength;
 
   // First, handle connection-optional requests
@@ -119,7 +119,7 @@ int DDMeta::write(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDMeta::close(int handle) {
+int DDMeta::close(int handle, int flags) {
   return DeviceDriver::close(handle);
 }
 

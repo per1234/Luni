@@ -28,7 +28,7 @@ DDStepper::DDStepper(const char *dName, int addrCount) :
 
 //---------------------------------------------------------------------------
 
-int DDStepper::open(const char *name, int flags) {
+int DDStepper::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -45,7 +45,7 @@ int DDStepper::open(const char *name, int flags) {
 /**
  * Read a status register on the device.
  */
-int DDStepper::read(int handle, int reg, int count, byte *buf) {
+int DDStepper::read(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
   case (int)(CDR::DriverVersion):
@@ -79,7 +79,7 @@ int DDStepper::read(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDStepper::write(int handle, int reg, int count, byte *buf) {
+int DDStepper::write(int handle, int flags, int reg, int count, byte *buf) {
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
@@ -104,7 +104,7 @@ int DDStepper::write(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDStepper::close(int handle) {
+int DDStepper::close(int handle, int flags) {
   return DeviceDriver::close(handle);
 }
 

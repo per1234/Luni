@@ -21,7 +21,7 @@ DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
 
 //---------------------------------------------------------------------------
 
-int DDMCP9808::open(const char *name, int flags) {
+int DDMCP9808::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -49,7 +49,7 @@ int DDMCP9808::open(const char *name, int flags) {
 /**
  * Read a register on the device.
  */
-int DDMCP9808::read(int handle, int reg, int count, byte *buf) {
+int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
   uint8_t v8;
   uint16_t v16;
   int v;
@@ -104,7 +104,7 @@ int DDMCP9808::read(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDMCP9808::write(int handle, int reg, int count, byte *buf) {
+int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
   LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
@@ -141,6 +141,6 @@ int DDMCP9808::write(int handle, int reg, int count, byte *buf) {
   return EPANIC;
 }
 
-int DDMCP9808::close(int handle) {
+int DDMCP9808::close(int handle, int flags) {
   return DeviceDriver::close(handle);
 }

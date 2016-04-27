@@ -18,7 +18,7 @@ DeviceDriver::DeviceDriver(const char *pre, const int count) :
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::open(const char *name, int flags) {
+int DeviceDriver::open(const char *name, int flags, int opts) {
   int lun;
 
   int prefixLength = strcspn(name, ":");
@@ -44,7 +44,7 @@ int DeviceDriver::open(const char *name, int flags) {
   return ENXIO;
 }
 
-int DeviceDriver::close(int handle) {
+int DeviceDriver::close(int handle, int flags) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit != 0) {
     delete currentUnit;

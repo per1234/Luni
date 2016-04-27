@@ -12,7 +12,7 @@ DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
 
 //---------------------------------------------------------------------------
 
-int DDHello::open(const char *name, int flags) {
+int DDHello::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -30,7 +30,7 @@ int DDHello::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int DDHello::read(int handle, int reg, int count, byte *buf) {
+int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
 
   // First, handle connection-optional requests
 
@@ -77,7 +77,7 @@ int DDHello::read(int handle, int reg, int count, byte *buf) {
   }
 }
 
-int DDHello::write(int handle, int reg, int count, byte *buf) {
+int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 
   // First, handle connection-optional requests
 
@@ -110,6 +110,6 @@ int DDHello::write(int handle, int reg, int count, byte *buf) {
   return EPANIC;
 }
 
-int DDHello::close(int handle) {
+int DDHello::close(int handle, int flags) {
   return DeviceDriver::close(handle);
 }

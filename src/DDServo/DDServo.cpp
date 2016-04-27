@@ -39,7 +39,7 @@ DDServo::DDServo(const char *dName, int lunCount) :
 
 //---------------------------------------------------------------------------
 
-int DDServo::open(const char *name, int flags) {
+int DDServo::open(const char *name, int flags, int opts) {
   int lun;
   int status = DeviceDriver::open(name, flags);
   if (status < 0) {
@@ -59,7 +59,7 @@ int DDServo::open(const char *name, int flags) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::read(int handle, int reg, int count, byte *buf) {
+int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
 
   // Registers for which no handle is needed
 
@@ -124,7 +124,7 @@ int DDServo::read(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::write(int handle, int reg, int count, byte *buf) {
+int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
   int thePin;
   uint8_t channel;
   int loPulse;
@@ -182,7 +182,7 @@ int DDServo::write(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::close(int handle) {
+int DDServo::close(int handle, int flags) {
   int lun = getUnitNumber(handle);
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
   currentUnit->detach();

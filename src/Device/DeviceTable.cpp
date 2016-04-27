@@ -52,11 +52,11 @@ void DeviceTable::reset() {
 
 //---------------------------------------------------------------------------
 
-int DeviceTable::open(const char *name, int flags) {
+int DeviceTable::open(const char *name, int flags, int opts) {
   int deviceIndex;
   int status = ENODEV;
   for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-    status = devices[deviceIndex]->open((char *)name, flags);
+    status = devices[deviceIndex]->open((char *)name, flags, opts);
     if (status == ENXIO || status == ENODEV) {
       continue;
     } else {
@@ -70,22 +70,22 @@ int DeviceTable::open(const char *name, int flags) {
   }
 }
 
-int DeviceTable::read(int handle, int reg, int count, byte *buf) {
+int DeviceTable::read(int handle, int flags, int reg, int count, byte *buf) {
   int deviceIndex = getDeviceNumber(handle);
   if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
-  return devices[deviceIndex]->read(handle, reg, count, buf);
+  return devices[deviceIndex]->read(handle, flags, reg, count, buf);
 }
 
-int DeviceTable::write(int handle, int reg, int count, byte *buf) {
+int DeviceTable::write(int handle, int flags, int reg, int count, byte *buf) {
   int deviceIndex = getDeviceNumber(handle);
   if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
-  return devices[deviceIndex]->write(handle, reg, count, buf);
+  return devices[deviceIndex]->write(handle, flags, reg, count, buf);
 }
 
-int DeviceTable::close(int handle) {
+int DeviceTable::close(int handle, int flags) {
   int deviceIndex = getDeviceNumber(handle);
   if (deviceIndex < 0 || deviceIndex >= deviceCount) return EINVAL;
-  return devices[deviceIndex]->close(handle);
+  return devices[deviceIndex]->close(handle, flags);
 }
 
 //----------------------------------------------------------------------------
