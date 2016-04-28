@@ -23,9 +23,9 @@ DDMeta::DDMeta(const char *dName, int count) :
 
 //---------------------------------------------------------------------------
 
-int DDMeta::open(const char *name, int flags, int opts) {
+int DDMeta::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(name, flags);
+  int status = DeviceDriver::open(opts, flags, name);
   if (status < 0) return status;
 
   lun = status;
@@ -58,15 +58,15 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(REG::DRIVER_VERSION_LIST):
     for (int idx=0; idx<Device->deviceCount; idx++) {
-      status = Device->read(makeHandle(idx,0), (int)(CDR::DriverVersion), 256, versionBuffer);
-      Device->cr->reportRead(status, handle, (int)(CDR::DriverVersion), 256, versionBuffer);
+      status = Device->read(makeHandle(idx,0), flags, (int)(CDR::DriverVersion), 256, versionBuffer);
+      Device->cr->reportRead(status, handle, flags, (int)(CDR::DriverVersion), 256, versionBuffer);
     }
     return ESUCCESS;
 
   case (int)(REG::UNIT_NAME_PREFIX_LIST):
     for (int idx=0; idx<Device->deviceCount; idx++) {
-      status = Device->read(makeHandle(idx,0), (int)(CDR::UnitNamePrefix), 256, versionBuffer);
-      Device->cr->reportRead(status, handle, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
+      status = Device->read(makeHandle(idx,0), flags, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
+      Device->cr->reportRead(status, handle, flags, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
     }
     return ESUCCESS;
 }
@@ -81,10 +81,10 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, reg, count, buf);
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::AVG_INTERVALS):
-    return readATI(handle, reg, count, buf);
+    return readATI(handle, flags, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -112,7 +112,7 @@ int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, reg, count, buf);
+    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -120,7 +120,7 @@ int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDMeta::close(int handle, int flags) {
-  return DeviceDriver::close(handle);
+  return DeviceDriver::close(handle, flags);
 }
 
 //---------------------------------------------------------------------------
@@ -152,7 +152,7 @@ int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
 
 //---------------------------------------------------------------------------
 
-int DDMeta::readATI(int handle, int reg, int count, byte *buf) {
+int DDMeta::readATI(int handle, int flags, int reg, int count, byte *buf) {
   unsigned long avg;
   LUMeta *cU = static_cast<LUMeta *>(logicalUnits[getUnitNumber(handle)]);
   if (cU == 0) return ENOTCONN;

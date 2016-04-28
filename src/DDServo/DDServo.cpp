@@ -39,9 +39,9 @@ DDServo::DDServo(const char *dName, int lunCount) :
 
 //---------------------------------------------------------------------------
 
-int DDServo::open(const char *name, int flags, int opts) {
+int DDServo::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(name, flags);
+  int status = DeviceDriver::open(opts, flags, name);
   if (status < 0) {
     return status;
   }
@@ -83,7 +83,7 @@ int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
     case (int)(CDR::Intervals):
-      return DeviceDriver::readIntervals(handle, reg, count, buf);
+      return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   }
 
@@ -187,5 +187,5 @@ int DDServo::close(int handle, int flags) {
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
   currentUnit->detach();
   logicalUnits[lun] = 0;
-  return DeviceDriver::close(handle);
+  return DeviceDriver::close(handle, flags);
 }

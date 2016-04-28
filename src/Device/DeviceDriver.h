@@ -22,9 +22,21 @@
 #define getUnitNumber(HANDLE) ((int)((HANDLE) & 0x7F))
 #define getDeviceNumber(HANDLE) ((int)(((HANDLE) >> 8) & 0x7F))
 
-// Open() flags
+// Device action flags.  There is only one set of flags shared among all the
+// action methods open(), read(), write(), and close().  Presumably the usage
+// of each flag will be similar across the methods, but there is no requirement
+// that it be exactly the same in each method.  Similarly, the same numeric
+// value can be used for entirely different meanings in the different methods.
+// In the latter case, the flags should have different names for clarity, even
+// though the actual numeric values are the same.
 
-#define DDO_FORCE_OPEN 0x01
+enum class DAF : int {
+    NONE        = 0x0,
+    FORCE       = 0x1,
+    LOW_RATE    = 0xD,
+    HIGH_RATE   = 0xE,
+    DUAL_RATE   = 0xF
+};
 
 // These are the common register identifiers used by the DeviceDrivers in their
 // read() and write() methods.  Register identifiers specific to a particular
@@ -36,12 +48,12 @@
 // register.
 //
 // NOTE:  The range of values -1..-255 is reserved for the common virtual
-// register values.  Any virtual registers defined by a DeviceDriver must
-// fall outside of this range to avoid conflict with the common registers.
+// register values.  The range -256..-32768 is reserved for future allocation
+// and should not be used at all.
 //
 // NOTE:  The range of values from 0..255 is reserved for identifying actual
 // physical registers on a device.  Any virtual register numbers defined by a
-// DeviceDriver must fall outside this range to avoid conflict with the
+// DeviceDriver must be greater than 255 to avoid conflict with the
 // physical registers.
 
 enum class CDR : int {
@@ -73,7 +85,7 @@ public:
 
     DeviceDriver(const char *nameRoot, const int count);
 
-    virtual int open(const char *name, int flags, int opts) = 0;
+    virtual int open(int opts, int flags, const char *name) = 0;
     virtual int read(int handle, int flags, int reg, int count, byte *buf) = 0;
     virtual int write(int handle, int flags, int reg, int count, byte *buf) = 0;
     virtual int close(int handle, int flags) = 0;
@@ -96,8 +108,8 @@ protected:
 
     int deviceNumber;        // the major handle value, ie index in the DeviceTable
 
-    int writeIntervals(int handle, int reg, int count, byte *buf);
-    int readIntervals(int handle, int reg, int count, byte *buf);
+    int writeIntervals(int handle, int flags, int reg, int count, byte *buf);
+    int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
 
 private:

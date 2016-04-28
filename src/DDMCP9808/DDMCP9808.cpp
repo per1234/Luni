@@ -21,9 +21,9 @@ DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
 
 //---------------------------------------------------------------------------
 
-int DDMCP9808::open(const char *name, int flags, int opts) {
+int DDMCP9808::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(name, flags);
+  int status = DeviceDriver::open(opts, flags, name);
   if (status < 0) {
     return status;
   }
@@ -142,5 +142,5 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDMCP9808::close(int handle, int flags) {
-  return DeviceDriver::close(handle);
+  return DeviceDriver::close(handle, flags);
 }

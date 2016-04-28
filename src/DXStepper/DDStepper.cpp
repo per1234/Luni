@@ -28,9 +28,9 @@ DDStepper::DDStepper(const char *dName, int addrCount) :
 
 //---------------------------------------------------------------------------
 
-int DDStepper::open(const char *name, int flags, int opts) {
+int DDStepper::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(name, flags);
+  int status = DeviceDriver::open(opts, flags, name);
   if (status < 0) {
     return status;
   }
@@ -62,13 +62,13 @@ int DDStepper::read(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, reg, count, buf);
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::RPMSpeeds):
-    return readRPMSpeeds(handle, reg, count, buf);
+    return readRPMSpeeds(handle, flags, reg, count, buf);
 
   case (int)(REG::PositionEvent):
-    return readPositionEvent(handle, reg, count, buf);
+    return readPositionEvent(handle, flags, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -86,16 +86,16 @@ int DDStepper::write(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
   case (int)(CDR::Configure):
-    return writeConfigure(handle, reg, count, buf);
+    return writeConfigure(handle, flags, reg, count, buf);
 
   case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, reg, count, buf);
+    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::MoveRelative):
-    return writeMoveRelative(handle, reg, count, buf);
+    return writeMoveRelative(handle, flags, reg, count, buf);
 
   case (int)(REG::RPMSpeeds):
-    return writeRPMSpeeds(handle, reg, count, buf);
+    return writeRPMSpeeds(handle, flags, reg, count, buf);
 
   default:
     return ENOTSUP;
@@ -105,12 +105,12 @@ int DDStepper::write(int handle, int flags, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DDStepper::close(int handle, int flags) {
-  return DeviceDriver::close(handle);
+  return DeviceDriver::close(handle, flags);
 }
 
 //---------------------------------------------------------------------------
 
-int DDStepper::readRPMSpeeds(int handle, int reg, int count, byte *buf) {
+int DDStepper::readRPMSpeeds(int handle, int flags, int reg, int count, byte *buf) {
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
@@ -126,7 +126,7 @@ int DDStepper::readRPMSpeeds(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDStepper::readPositionEvent(int handle, int reg, int count, byte *buf) {
+int DDStepper::readPositionEvent(int handle, int flags, int reg, int count, byte *buf) {
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
@@ -141,7 +141,7 @@ int DDStepper::readPositionEvent(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDStepper::writeConfigure(int handle, int reg, int count, byte *buf) {
+int DDStepper::writeConfigure(int handle, int flags, int reg, int count, byte *buf) {
   int interface, stepCount, pin1, pin2, pin3, pin4;
   LUStepper *motor;
 
@@ -187,7 +187,7 @@ int DDStepper::writeConfigure(int handle, int reg, int count, byte *buf) {
   return count;
 }
 
-int DDStepper::writeRPMSpeeds(int handle, int reg, int count, byte *buf) {
+int DDStepper::writeRPMSpeeds(int handle, int flags, int reg, int count, byte *buf) {
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
@@ -200,7 +200,7 @@ int DDStepper::writeRPMSpeeds(int handle, int reg, int count, byte *buf) {
   return count;
 }
 
-int DDStepper::writeMoveRelative(int handle, int reg, int count, byte *buf) {
+int DDStepper::writeMoveRelative(int handle, int flags, int reg, int count, byte *buf) {
   LUStepper *currentUnit = static_cast<LUStepper *>(logicalUnits[getUnitNumber(handle)]);
   if (currentUnit == 0) return ENOTCONN;
   if (currentUnit == OPEN_BUT_NOT_CONFIGURED) return EBADFD;
@@ -230,12 +230,12 @@ int DDStepper::processTimerEvent(int lun, int timerIndex, ClientReporter *r) {
 
     reg = (int)(REG::PositionEvent);
     handle = makeHandle(deviceNumber, lun);
-    status = readPositionEvent(handle, reg, 2, &(currentUnit->buf[0]));
+    status = readPositionEvent(handle, 0, reg, 2, &(currentUnit->buf[0]));
 
     // notify client application when stepping is complete
 
     if ((status == 2) && (currentUnit->buf[0] == 1)) {
-      r->reportRead(status, handle, reg, 2, currentUnit->buf);
+      r->reportRead(status, handle, 0, reg, 2, currentUnit->buf);
     }
     result = ESUCCESS;
     break;

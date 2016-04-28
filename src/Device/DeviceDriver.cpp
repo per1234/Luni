@@ -18,7 +18,7 @@ DeviceDriver::DeviceDriver(const char *pre, const int count) :
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::open(const char *name, int flags, int opts) {
+int DeviceDriver::open(int opts, int flags, const char *name) {
   int lun;
 
   int prefixLength = strcspn(name, ":");
@@ -35,7 +35,7 @@ int DeviceDriver::open(const char *name, int flags, int opts) {
     return lun;
   }
 
-  if ((flags & DDO_FORCE_OPEN) == 0) {
+  if (flags == (int)(DAF::FORCE)) {
     return EADDRINUSE;
   } else {
     delete logicalUnits[lun];
@@ -89,7 +89,7 @@ int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
 }
 //---------------------------------------------------------------------------
 
-int DeviceDriver::readIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::readIntervals(int handle, int flags, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;
@@ -101,7 +101,7 @@ int DeviceDriver::readIntervals(int handle, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::writeIntervals(int handle, int reg, int count, byte *buf) {
+int DeviceDriver::writeIntervals(int handle, int flags, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
   if (count < 8) return EMSGSIZE;

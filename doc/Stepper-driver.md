@@ -35,7 +35,7 @@ Read information from a register (or virtual register) in the device or device d
 
 The method and its parameters are as follows.
 
-    int status(int handle, int reg, int count, byte *buf)
+    int status(int handle, int flags, int reg, int count, byte *buf)
 
 **param** (in) `handle` The device driver selector value returned by Open in a previous call.
 
@@ -50,7 +50,7 @@ The method and its parameters are as follows.
 ---
 ###Stepper - Control
 
-    int control(int handle, int reg, int count, byte *buf)
+    int control(int handle, int flags, int reg, int count, byte *buf)
 
 **param** (in) `handle` The device driver selector value returned by Open in a previous call.
 
@@ -65,7 +65,7 @@ The method and its parameters are as follows.
 ---
 ###Stepper - Read
 
-    int read(int handle, int count, byte *buf)
+    int read(int handle, int flags, int count, byte *buf)
 
 **param** (in) `handle` The device driver selector value returned by Open in a previous call.
 
@@ -78,7 +78,7 @@ The method and its parameters are as follows.
 ---
 ###Stepper - Write
 
-    int write(int handle, int count, byte *buf)
+    int write(int handle, int flags, int count, byte *buf)
 
 **param** (in) `handle` The device driver selector value returned by Open in a previous call.
 

@@ -18,7 +18,7 @@ public:
 
   DDStepper(const char *dName, int addrCount);
 
-  int open(const char *name, int flags = 0, int opts = 0);
+  int open(int opts, int flags, const char *name);
   int read(int handle, int flags, int reg, int count, byte *buf);
   int write(int handle, int flags, int reg, int count, byte *buf);
   int close(int handle, int flags);
@@ -35,11 +35,11 @@ enum class REG : int {
 
 private:
 
-  int writeConfigure(int handle, int reg, int count, byte *buf);
-  int writeMoveRelative(int handle, int reg, int count, byte *buf);
-  int writeRPMSpeeds(int handle, int reg, int count, byte *buf);
-  int readRPMSpeeds(int handle, int reg, int count, byte *buf);
-  int readPositionEvent(int handle, int reg, int count, byte *buf);
+  int writeConfigure(int handle, int flags, int reg, int count, byte *buf);
+  int writeMoveRelative(int handle, int flags, int reg, int count, byte *buf);
+  int writeRPMSpeeds(int handle, int flags, int reg, int count, byte *buf);
+  int readRPMSpeeds(int handle, int flags, int reg, int count, byte *buf);
+  int readPositionEvent(int handle, int flags, int reg, int count, byte *buf);
 
 };
 

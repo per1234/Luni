@@ -14,9 +14,9 @@ DDSensor::DDSensor(const char *dName, int lunCount) :
 
 //---------------------------------------------------------------------------
 
-int DDSensor::open(const char *name, int flags, int opts) {
+int DDSensor::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(name, flags);
+  int status = DeviceDriver::open(opts, flags, name);
   if (status < 0) {
     return status;
   }
@@ -58,7 +58,7 @@ int DDSensor::read(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
     case (int)(CDR::Intervals):
-      return DeviceDriver::readIntervals(handle, reg, count, buf);
+      return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   }
 
@@ -127,5 +127,5 @@ int DDSensor::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDSensor::close(int handle, int flags) {
-  return DeviceDriver::close(handle);
+  return DeviceDriver::close(handle, flags);
 }

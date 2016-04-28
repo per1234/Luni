@@ -10,7 +10,7 @@ class DDMCP9808: public DeviceDriver {
 public:
   DDMCP9808(const char *unitName = "TC", int count = 8, int base = 0x18);
 
-  int open(const char *name, int flags = 0, int opts = 0);
+  int open(int opts, int flags, const char *name);
   int read(int handle, int flags, int reg, int count, byte *buf);
   int write(int handle, int flags, int reg, int count, byte *buf);
   int close(int handle, int flags);

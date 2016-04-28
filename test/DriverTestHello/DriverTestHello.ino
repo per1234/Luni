@@ -51,7 +51,7 @@ void setup() {
   // --------------------------------------------------------
 
   tst->beforeTest("HelloOpenClose");
-  int status = dt->open("HW:0", DDO_FORCE_OPEN);
+  int status = dt->open("HW:0", DAF::FORCE);
   tst->assertTrue("Open error.", (status >= 0));
   if (status >= 0) {
     int handle = status;
@@ -69,7 +69,7 @@ void setup() {
 
   if (status >= 0) {
     int handle = status;
-    status = dt->read(handle, 256, buf);
+    status = dt->read(handle, flags, 256, buf);
     tst->assertTrue("Read error.", (status >= 0));
 
     logger->debug("Read n bytes.", status);
@@ -88,7 +88,7 @@ void setup() {
 
   if (status >= 0) {
     int handle = status;
-    status = dt->status(handle, reg, BUF_SIZE, buf);
+    status = dt->status(handle, flags, reg, BUF_SIZE, buf);
     tst->assertTrue("Device status() Driver Version assertTrue:", (status >= 0));
     if (status >= 0) {
       logger->debug("Version data is n bytes. ", status);
@@ -114,7 +114,7 @@ void setup() {
     for (int r = 0; r < 2; r++) {
       int count = BUF_SIZE;
 
-      status = dt->status(handle, r, count, buf);
+      status = dt->status(handle, flags, r, count, buf);
       tst->assertTrue("Device status() error.", (status >= 0));
       tst->assertTrue("Device status() actual < max assertTrue:", (status < count));
       if (status < 0) continue;

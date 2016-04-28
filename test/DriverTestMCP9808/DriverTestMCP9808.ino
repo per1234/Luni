@@ -51,7 +51,7 @@ void setup() {
   // --------------------------------------------------------
 
   tst->beforeTest("MCP9808OpenClose");
-  int status = dt->open("TempSensor:0", DDO_FORCE_OPEN);
+  int status = dt->open("TempSensor:0", DAF::FORCE);
   tst->assertTrue("Open error.", (status >= 0));
   if (status >= 0) {
     int handle = status;
@@ -68,7 +68,7 @@ void setup() {
 
   if (status >= 0) {
     int handle = status;
-    status = dt->read(handle, 2, buf);
+    status = dt->read(handle, flags, 2, buf);
     tst->assertEquals("read() count assertEquals:", 2, status);
     logger->debug("Read 2 bytes:", buf[0], buf[1]);
     status = dt->close(handle);
@@ -86,7 +86,7 @@ void setup() {
 
   if (status >= 0) {
     int handle = status;
-    status = dt->status(handle, reg, BUF_SIZE, buf);
+    status = dt->status(handle, flags, reg, BUF_SIZE, buf);
     tst->assertTrue("Device status() Driver Version assertTrue:", (status >= 0));
     if (status >= 0) {
       logger->debug("Version data is n bytes. ",status);
@@ -112,7 +112,7 @@ void setup() {
     for (int r = 1; r < 9; r++) {
       int count = (r == 8) ? 1 : 2;
 
-      status = dt->status(handle, r, count, buf);
+      status = dt->status(handle, flags, r, count, buf);
       tst->assertEquals("Device status() count assertEquals:", count, status);
       if (status < 0) continue;
 

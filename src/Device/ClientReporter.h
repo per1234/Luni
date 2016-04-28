@@ -16,7 +16,7 @@
 class ClientReporter {
 public:
 
-    virtual void reportOpen(int status, const byte *buf, int flags, int opts) = 0;
+    virtual void reportOpen(int status, int opts, int flags, const byte *buf) = 0;
     virtual void reportRead(int status, int handle, int flags, int reg, int count, const byte *dataBytes) = 0;
     virtual void reportWrite(int status, int handle, int flags,  int reg, int count) = 0;
     virtual void reportClose(int status, int handle, int flags ) = 0;

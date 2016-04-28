@@ -44,7 +44,7 @@ void setup() {
     //    buf[bufIndex++] = getLSBInt16(pin[idx]);
     //    buf[bufIndex++] = getMSBInt16(pin[idx]);
     //  }
-    //  status = dd->control(handle, CDR_Configure, bufIndex, buf);
+    //  status = dd->control(handle, flags, CDR_Configure, bufIndex, buf);
     //  Serial.println(status);
     //
     //  Serial.print("Speed: ");
@@ -53,7 +53,7 @@ void setup() {
     //  buf[bufIndex++] = getMSBInt16(RevolutionsPerMinute);
     //  buf[bufIndex++] = 0;
     //  buf[bufIndex++] = 0;
-    //  status = dd->control(handle, STP_RPMSpeed, bufIndex, buf);
+    //  status = dd->control(handle, flags, STP_RPMSpeed, bufIndex, buf);
     //  Serial.println(status);
 
     if (status < 0) {
@@ -63,7 +63,7 @@ void setup() {
     }
     for (int regIndex = 0; regIndex < 2; regIndex++) {
       Serial.print("Version: ");
-      status = dt.status(handle, vReg[regIndex], BUF_SIZE, buf);
+      status = dt.status(handle, flags, vReg[regIndex], BUF_SIZE, buf);
       Serial.print(status);
       if (status >= 0) {
         bufIndex = 0;
@@ -111,7 +111,7 @@ void loop() {
   //  buf[msgIndex++] = 0;
   //  buf[msgIndex++] = 0;
   //  buf[msgIndex++] = 0;
-  //  int status = dd->control(handle, STP_MoveR, msgIndex, buf);
+  //  int status = dd->control(handle, flags, STP_MoveR, msgIndex, buf);
   //  Serial.println(status);
   //
   //  //delay(1000);
@@ -123,7 +123,7 @@ void loop() {
   //  buf[msgIndex++] = -1;
   //  buf[msgIndex++] = -1;
   //  buf[msgIndex++] = 0;
-  //  status = dd->control(handle, STP_MoveR, msgIndex, buf);
+  //  status = dd->control(handle, flags, STP_MoveR, msgIndex, buf);
   //  Serial.println(status);
   //
   //  //delay(1000);

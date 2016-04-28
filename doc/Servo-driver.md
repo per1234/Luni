@@ -32,7 +32,7 @@ By default, this device driver recognizes names beginning with "MCP9808", but ot
 
 ---
 ###MCP9808 - Status
-	int status(int handle, int reg, int count, void *buf)
+	int status(int handle, int flags, int reg, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 
@@ -46,7 +46,7 @@ By default, this device driver recognizes names beginning with "MCP9808", but ot
 
 ---
 ###MCP9808 - Control
-	int control(int handle, int reg, int count, void *buf)
+	int control(int handle, int flags, int reg, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 
@@ -61,7 +61,7 @@ By default, this device driver recognizes names beginning with "MCP9808", but ot
 
 ---
 ###MCP9808 - Read
-	int read(int handle, int count, void *buf)
+	int read(int handle, int flags, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 
@@ -75,7 +75,7 @@ By default, this device driver recognizes names beginning with "MCP9808", but ot
 
 ---
 ###MCP9808 - Write
-	int write(int handle, int count, void *buf)
+	int write(int handle, int flags, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 

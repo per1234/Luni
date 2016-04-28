@@ -11,7 +11,7 @@ public:
 
   DDMeta(const char *unitName = "Meta", int count = 1);
 
-  int open(const char *name, int flags = 0, int opts = 0);
+  int open(int opts, int flags, const char *name);
   int read(int handle, int flags, int reg, int count, byte *buf);
   int write(int handle, int flags, int reg, int count, byte *buf);
   int close(int handle, int flags);
@@ -28,7 +28,7 @@ public:
 private:
   const DeviceTable *theDeviceTable;
 
-  int readATI(int handle, int reg, int count, byte *buf);
+  int readATI(int handle, int flags, int reg, int count, byte *buf);
 
   unsigned long calculateAverageInterval(int idx);
 

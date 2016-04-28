@@ -52,11 +52,11 @@ void DeviceTable::reset() {
 
 //---------------------------------------------------------------------------
 
-int DeviceTable::open(const char *name, int flags, int opts) {
+int DeviceTable::open(int opts, int flags, const char *name) {
   int deviceIndex;
   int status = ENODEV;
   for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++) {
-    status = devices[deviceIndex]->open((char *)name, flags, opts);
+    status = devices[deviceIndex]->open(opts, flags, (char *)name);
     if (status == ENXIO || status == ENODEV) {
       continue;
     } else {

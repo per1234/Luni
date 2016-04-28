@@ -15,7 +15,7 @@ public:
     DeviceTable(DeviceDriver *deviceArray[], ClientReporter *reporter);
     ~DeviceTable();
 
-    int open(const char *name, int flags = 0, int opts = 0);
+    int open(int opts, int flags, const char *name);
     int read(int handle, int flags, int reg, int count, byte *buf);
     int write(int handle, int flags, int reg, int count, byte *buf);
     int close(int handle, int flags);

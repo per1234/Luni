@@ -30,7 +30,7 @@ By default, this device driver recognizes names beginning with "Hello", but othe
 
 ---
 ###Hello - Status
-	int status(int handle, int reg, int count, void *buf)
+	int status(int handle, int flags, int reg, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 **param** `reg` The status register address at which to start reading.  This value does not necessarily name a real register, but is used by the device driver to identify the desired status information.  
@@ -42,7 +42,7 @@ not open, the handle is invalid, etc.)
 
 ---
 ###Hello - Control
-	int control(int handle, int reg, int count, void *buf)
+	int control(int handle, int flags, int reg, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 **param** `reg` The control register address at which to start writing.   This value does not necessarily name a real register, but is used by the device driver to identify the desired control function.  
@@ -54,7 +54,7 @@ not open, the handle is invalid, etc.)
 
 ---
 ###Hello - Read
-	int read(int handle, int count, void *buf)
+	int read(int handle, int flags, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous call.  
 **param** `count` The number of bytes to read.  
@@ -67,7 +67,7 @@ not open, the handle is invalid, etc.)
 
 ---
 ###Hello - Write
-	int write(int handle, int count, void *buf)
+	int write(int handle, int flags, int count, void *buf)
 
 **param** `handle` The device driver selector value returned by Open in a previous
 call.  
