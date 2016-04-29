@@ -11,6 +11,9 @@ char* preReleaseLabel {"p"};\
 char* buildLabel {"b"};
 
 // Put call to DEFINE_VERSION as a line in the device driver constructor.
+// This call needs to be in the body of the constructor so that the class
+// name is picked up correctly.
+//
 // A pre-release label and a build meta-data label can be added using
 // alternate forms of the macro.  For example:
 //
