@@ -113,21 +113,34 @@ int DeviceDriver::writeIntervals(int handle, int flags, int reg, int count, byte
 
 //---------------------------------------------------------------------------
 
+/**
+ * This method returns two null-terminated strings in the given buffer.
+ * The first string is the unit name associated with this device driver when
+ * the constructor was originally called during compile and link.  The second
+ * string is the name of the device driver, the same name as in the version
+ * response, but without any of the release information.  Note that these are
+ * two distinct null-terminated strings.  The second string starts after the
+ * null that terminates the first string.
+ *
+ * @param  count The number of bytes in the provided buffer
+ * @param  buf   The buffer in which to return the two strings
+ * @return       Two null-terminated strings: the unit name root and the name
+ * of the device driver
+ */
 int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
-  int scopeLength = strlen(scopeName);
+  int scopeNameLength = strlen(scopeName);
   int prefixLength = strlen(unitNamePrefix);
-  if (count < (scopeLength + prefixLength + 2)) return EMSGSIZE;
-
-  buf[0] = 0;
-  strcat((char *)buf, scopeName);
-  strcat((char *)buf+scopeLength+1, unitNamePrefix);
-  return scopeLength + prefixLength + 2;
+  if (count < prefixLength + scopeNameLength + 2) return EMSGSIZE;
+  strlcpy((char *)buf, unitNamePrefix,count);
+  strlcpy((char *)buf+prefixLength+1, scopeName, count);
+  return prefixLength + scopeNameLength + 2;
 }
 
 int DeviceDriver::buildWritePrefixResponse(int count, const byte *newPrefix) {
+  char *temp = strdup((char *)newPrefix);
+  if (temp == 0) return ENOMEM;
   free(unitNamePrefix);
-  unitNamePrefix = strdup((char *)newPrefix);
-  if (unitNamePrefix == 0) return ENOMEM;
+  unitNamePrefix = temp;
   return strlen(unitNamePrefix);
 }
 

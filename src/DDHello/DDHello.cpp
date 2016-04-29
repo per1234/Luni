@@ -52,6 +52,9 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
 
+  case (int)(CDR::Intervals):
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+
   case (int)(CDR::Stream):
     if ((size_t)count >= (strlen(currentUnit->getWho()) + strlen(currentUnit->getWhat()) + 4)) {
       buf[0] = (uint8_t)'\0';

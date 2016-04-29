@@ -2,8 +2,8 @@
 #define DeviceDriver_h
 
 #include <arduino.h>
-#include <avr/pgmspace.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 
 #include <Framework/ByteOrder.h>
