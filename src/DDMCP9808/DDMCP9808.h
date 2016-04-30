@@ -3,6 +3,7 @@
 
 #include <Silicon/I2CPort.h>
 #include <Device/DeviceDriver.h>
+#include <Device/DeviceTable.h>
 #include "LUMCP9808.h"
 
 class DDMCP9808: public DeviceDriver {
@@ -14,6 +15,8 @@ public:
   int read(int handle, int flags, int reg, int count, byte *buf);
   int write(int handle, int flags, int reg, int count, byte *buf);
   int close(int handle, int flags);
+
+  int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
 
   enum class REG : int {
     RESERVED = 0,

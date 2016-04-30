@@ -32,6 +32,8 @@ int DDHello::open(int opts, int flags, const char *name) {
 
 int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
 
+  if (count < 0) return EINVAL;
+
   // First, handle connection-optional requests
 
   switch (reg) {

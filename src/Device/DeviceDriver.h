@@ -13,6 +13,15 @@
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"
 
+#define QUERY_BUFFER_SIZE 32
+#define RESPONSE_BUFFER_SIZE 32
+
+#define MINIMUM_UPDATE_INTERVAL 100    // microseconds
+#define DEFAULT_UPDATE_INTERVAL 200
+
+#define MINIMUM_REPORT_INTERVAL 10     // milliseconds
+#define DEFAULT_REPORT_INTERVAL 19
+
 // Combine device number and unit number to get full handle
 
 #define makeHandle(DEVICE_NUMBER, UNIT_NUMBER) ((int)(((DEVICE_NUMBER & 0x7F) << 8) | (UNIT_NUMBER & 0x7F)))
@@ -22,20 +31,31 @@
 #define getUnitNumber(HANDLE) ((int)((HANDLE) & 0x7F))
 #define getDeviceNumber(HANDLE) ((int)(((HANDLE) >> 8) & 0x7F))
 
-// Device action flags.  There is only one set of flags shared among all the
+// Device Action Codes, ie, numeric coding of the Device Driver
+// action methods open(), read(), write(), and close().  These
+// codes are 4-bit numbers (0..15).
+
+enum class DAC : int {
+    OPEN    = 0x0,
+    READ    = 0x1,
+    WRITE   = 0x2,
+    CLOSE   = 0x3
+};
+
+// Device Action Flags.  There is only one set of flags shared among all the
 // action methods open(), read(), write(), and close().  Presumably the usage
 // of each flag will be similar across the methods, but there is no requirement
 // that it be exactly the same in each method.  Similarly, the same numeric
 // value can be used for entirely different meanings in the different methods.
 // In the latter case, the flags should have different names for clarity, even
 // though the actual numeric values are the same.
+// These flags are 4-bit numbers (0..15).
 
 enum class DAF : int {
     NONE        = 0x0,
     FORCE       = 0x1,
-    LOW_RATE    = 0xD,
-    HIGH_RATE   = 0xE,
-    DUAL_RATE   = 0xF
+    MILLI_RATE  = 0xE,
+    MICRO_RATE  = 0xF
 };
 
 // These are the common register identifiers used by the DeviceDrivers in their
@@ -68,14 +88,6 @@ enum class CDR : int {
     DeviceID        = -9,   /* Unique ID for the component attached to the open unit number */
     Debug           = -255  /* Do something helpful for debugging ... */
 };
-
-#define MAX_UNIT_NAME_LENGTH 32
-
-#define MINIMUM_UPDATE_INTERVAL 100    // microseconds
-#define DEFAULT_UPDATE_INTERVAL 200
-
-#define MINIMUM_REPORT_INTERVAL 10     // milliseconds
-#define DEFAULT_REPORT_INTERVAL 19
 
 class DeviceDriver {
 
@@ -111,6 +123,8 @@ protected:
     int writeIntervals(int handle, int flags, int reg, int count, byte *buf);
     int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
+    int setMilliRateAction(int action, int handle, int flags, int reg, int count);
+    int setMicroRateAction(int action, int handle, int flags, int reg, int count);
 
 private:
 

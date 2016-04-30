@@ -199,7 +199,24 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
   } else {
     elapsedTime = (ULONG_MAX - lui->previousTime[timerIndex]) + (lui->currentTime[timerIndex] + 1);
   }
-
   return elapsedTime;
-
 }
+
+//---------------------------------------------------------------------------
+
+int DeviceDriver::setMilliRateAction(int action, int handle, int flags, int reg, int count){
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LogicalUnitInfo *currentUnit = logicalUnits[lun];
+  if (currentUnit == 0) return ENOTCONN;
+
+  currentUnit->milliAction.action = action;
+  currentUnit->milliAction.handle = handle;
+  currentUnit->milliAction.flags = flags;
+  currentUnit->milliAction.reg = reg;
+  currentUnit->milliAction.count = count;
+  currentUnit->milliAction.enabled = true;
+}
+
+int DeviceDriver::setMicroRateAction(int action, int handle, int flags, int reg, int count) {}
+

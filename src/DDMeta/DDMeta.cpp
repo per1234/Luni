@@ -5,8 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-extern DeviceTable *Device;
-
+extern DeviceTable *globalDeviceTable;
 
 /**
  * This DDMeta class is an administrative and development tool.  As a device
@@ -39,7 +38,7 @@ int DDMeta::open(int opts, int flags, const char *name) {
 
 int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
   int status;
-  byte versionBuffer[256];
+  byte versionBuffer[RESPONSE_BUFFER_SIZE];
 
   // First, handle connection-optional requests
 
@@ -53,20 +52,20 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(REG::DRIVER_COUNT):
     if (count < 2) return EMSGSIZE;
-    fromHostTo16LE(Device->deviceCount, buf);
+    fromHostTo16LE(globalDeviceTable->deviceCount, buf);
     return 2;
 
   case (int)(REG::DRIVER_VERSION_LIST):
-    for (int idx=0; idx<Device->deviceCount; idx++) {
-      status = Device->read(makeHandle(idx,0), flags, (int)(CDR::DriverVersion), 256, versionBuffer);
-      Device->cr->reportRead(status, handle, flags, (int)(CDR::DriverVersion), 256, versionBuffer);
+    for (int idx=0; idx<globalDeviceTable->deviceCount; idx++) {
+      status = globalDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
+      globalDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
     }
     return ESUCCESS;
 
   case (int)(REG::UNIT_NAME_PREFIX_LIST):
-    for (int idx=0; idx<Device->deviceCount; idx++) {
-      status = Device->read(makeHandle(idx,0), flags, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
-      Device->cr->reportRead(status, handle, flags, (int)(CDR::UnitNamePrefix), 256, versionBuffer);
+    for (int idx=0; idx<globalDeviceTable->deviceCount; idx++) {
+      status = globalDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
+      globalDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
     }
     return ESUCCESS;
 }

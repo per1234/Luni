@@ -3,6 +3,7 @@
 
 //---------------------------------------------------------------------------
 
+extern DeviceTable *globalDeviceTable;
 
 /**
  * This device driver is for the Microchip Technology MCP9808 Digital
@@ -46,6 +47,8 @@ int DDMCP9808::open(int opts, int flags, const char *name) {
   return lun;
 }
 
+//---------------------------------------------------------------------------
+
 /**
  * Read a register on the device.
  */
@@ -54,6 +57,10 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
   uint16_t v16;
   int v;
 
+  if (count < 0) return EINVAL;
+
+  // First, handle connection-optional requests
+
   switch (reg) {
 
   case (int)(CDR::DriverVersion):
@@ -61,21 +68,31 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildReadPrefixResponse(count,buf);
-
   }
 
-  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[getUnitNumber(handle)]);
+  // Second, deal with connection-required requests
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
-  if (count < 0) return EINVAL;
 
   int address = currentUnit->i2cAddress;
 
+  if (flags == (int)DAF::MILLI_RATE) {
+    DeviceDriver::setMilliRateAction((int)DAC::READ, handle, flags, reg, count);
+  }
+
   switch (reg) {
+
+  case (int)(CDR::Intervals):
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   case (int)(CDR::Stream):
     if (count < 2) {
       return EINVAL;
     }
+
     reg = static_cast<int>(REG::AMBIENT_TEMP);
     v = i2c.read16BE(address, reg);
     fromHostTo16BE(v, buf);
@@ -103,6 +120,8 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
     return ENOTSUP;
   }
 }
+
+//---------------------------------------------------------------------------
 
 int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
@@ -141,6 +160,40 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
   return EPANIC;
 }
 
+//---------------------------------------------------------------------------
+
 int DDMCP9808::close(int handle, int flags) {
   return DeviceDriver::close(handle, flags);
 }
+
+//---------------------------------------------------------------------------
+
+// If a continuous read has been requested, process it.
+
+int DDMCP9808::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
+
+  LogicalUnitInfo *cU = logicalUnits[getUnitNumber(lun)];
+  if (cU == 0) return ENOTCONN;
+
+  int h = cU->milliAction.handle;
+  int f = cU->milliAction.flags;
+  int r = cU->milliAction.reg;
+  int c = min(cU->milliAction.count,LUI_RESPONSE_BUFFER_SIZE);
+
+  if (timerSelector == 1) {
+    if (cU->milliAction.enabled) {
+      int status;
+      if (cU->milliAction.action == (int)(DAC::READ)) {
+        status = globalDeviceTable->read(h,f,r,c,cU->milliAction.responseBuffer);
+        report->reportRead(status, h, f, r, c, (const byte *)(cU->milliAction.responseBuffer));
+        return status;
+      } else if (cU->milliAction.action == (int)(DAC::WRITE)) {
+        status = globalDeviceTable->write(h,f,r,c,cU->milliAction.responseBuffer);
+        report->reportWrite(status, h, f, r, c);
+        return status;
+      }
+    }
+  }
+  return ENOTSUP;
+}
+
