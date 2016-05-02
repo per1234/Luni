@@ -33,12 +33,12 @@ int DDMCP9808::open(int opts, int flags, const char *name) {
   LUMCP9808 *currentUnit = new LUMCP9808(baseAddress + lun);
 
   int address = currentUnit->i2cAddress;
-  int theRegister = static_cast<int>(REG::MANUF_ID);
+  int theRegister = (int)(REG::MANUF_ID);
   if (i2c.read16BE(address, theRegister) != 0x0054) {
     return ECONNREFUSED;
   }
 
-  theRegister = static_cast<int>(REG::DEVICE_ID);
+  theRegister = (int)(REG::DEVICE_ID);
   if (i2c.read16BE(address, theRegister) != 0x0400) {
     return ECONNREFUSED;
   }
@@ -93,24 +93,24 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
       return EINVAL;
     }
 
-    reg = static_cast<int>(REG::AMBIENT_TEMP);
+    reg = (int)(REG::AMBIENT_TEMP);
     v = i2c.read16BE(address, reg);
     fromHostTo16BE(v, buf);
     return count;
 
-  case static_cast<int>(REG::CONFIG):
-  case static_cast<int>(REG::UPPER_TEMP):
-  case static_cast<int>(REG::LOWER_TEMP):
-  case static_cast<int>(REG::CRIT_TEMP):
-  case static_cast<int>(REG::AMBIENT_TEMP):
-  case static_cast<int>(REG::MANUF_ID):
-  case static_cast<int>(REG::DEVICE_ID):
+  case (int)(REG::CONFIG):
+  case (int)(REG::UPPER_TEMP):
+  case (int)(REG::LOWER_TEMP):
+  case (int)(REG::CRIT_TEMP):
+  case (int)(REG::AMBIENT_TEMP):
+  case (int)(REG::MANUF_ID):
+  case (int)(REG::DEVICE_ID):
     if (count < 2) return EMSGSIZE;
     v16 = i2c.read16BE(address, reg);
     fromHostTo16BE(v16, buf);
     return 2;
 
-  case static_cast<int>(REG::RESOLUTION):
+  case (int)(REG::RESOLUTION):
     if (count < 1) return EMSGSIZE;
     v8 = i2c.read8(address, reg);
     buf[0] = v8;
@@ -125,7 +125,20 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
 int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
-  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[getUnitNumber(handle)]);
+  // First, handle connection-optional requests
+
+  switch (reg) {
+
+  case (int)(CDR::UnitNamePrefix):
+      return DeviceDriver::buildWritePrefixResponse(count,buf);
+  }
+
+
+  // Second, deal with connection-required requests
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
   int theI2CAddress = currentUnit->i2cAddress;
@@ -135,10 +148,13 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case static_cast<int>(REG::CONFIG):
-  case static_cast<int>(REG::UPPER_TEMP):
-  case static_cast<int>(REG::LOWER_TEMP):
-  case static_cast<int>(REG::CRIT_TEMP):
+  case (int)(CDR::Intervals):
+    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
+
+  case (int)(REG::CONFIG):
+  case (int)(REG::UPPER_TEMP):
+  case (int)(REG::LOWER_TEMP):
+  case (int)(REG::CRIT_TEMP):
     if (count == 2) {
       i2c.write16BE(theI2CAddress, reg, from16BEToHost(buf));
       return count;
@@ -146,7 +162,7 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
       return EINVAL;
     }
 
-  case static_cast<int>(REG::RESOLUTION):
+  case (int)(REG::RESOLUTION):
     if (count == 1) {
       i2c.write8BE(theI2CAddress, reg, from8BEToHost(buf));
       return count;
@@ -183,11 +199,11 @@ int DDMCP9808::processTimerEvent(int lun, int timerSelector, ClientReporter *rep
   if (timerSelector == 1) {
     if (cU->milliAction.enabled) {
       int status;
-      if (cU->milliAction.action == (int)(DAC::READ)) {
+      if ((cU->milliAction.action & 0xF) == (int)(DAC::READ))  {
         status = globalDeviceTable->read(h,f,r,c,cU->milliAction.responseBuffer);
         report->reportRead(status, h, f, r, c, (const byte *)(cU->milliAction.responseBuffer));
         return status;
-      } else if (cU->milliAction.action == (int)(DAC::WRITE)) {
+      } else if ((cU->milliAction.action & 0xF) == (int)(DAC::WRITE)) {
         status = globalDeviceTable->write(h,f,r,c,cU->milliAction.responseBuffer);
         report->reportWrite(status, h, f, r, c);
         return status;

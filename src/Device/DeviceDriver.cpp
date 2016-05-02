@@ -36,11 +36,12 @@ int DeviceDriver::open(int opts, int flags, const char *name) {
   }
 
   if (flags == (int)(DAF::FORCE)) {
-    return EADDRINUSE;
-  } else {
     delete logicalUnits[lun];
     return lun;
+  } else {
+    return EADDRINUSE;
   }
+
   return ENXIO;
 }
 
@@ -101,6 +102,15 @@ int DeviceDriver::readIntervals(int handle, int flags, int reg, int count, byte 
 
 //---------------------------------------------------------------------------
 
+/**
+ * [DeviceDriver::writeIntervals description]
+ * @param  handle [description]
+ * @param  flags  [description]
+ * @param  reg    [description]
+ * @param  count  [description]
+ * @param  buf    [description]
+ * @return        [description]
+ */
 int DeviceDriver::writeIntervals(int handle, int flags, int reg, int count, byte *buf) {
   LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
   if (currentUnit == 0) return ENOTCONN;
