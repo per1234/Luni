@@ -24,15 +24,13 @@ public:
     byte responseBuffer[LUI_RESPONSE_BUFFER_SIZE];
   };
 
-  RateAction microAction;
-  RateAction milliAction;
-
-private:
+  // timer[0] counts in microseconds, timer[1] counts in milliseconds
 
   unsigned long intervalTime[2];    // desired length of time between calls to update() and report()
   unsigned long previousTime[2];    // the time the last interval expired
   unsigned long currentTime[2];     // the current values from micros() and millis()
   unsigned long deltaTime[2];       // amount of time since last interval expired
+  RateAction eventAction[2];        // action to take when timer expires
 };
 
 #endif

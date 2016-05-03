@@ -54,8 +54,10 @@ enum class DAC : int {
 enum class DAF : int {
     NONE        = 0x0,
     FORCE       = 0x1,
-    MILLI_RATE  = 0xE,
-    MICRO_RATE  = 0xF
+    MILLI_RUN   = 0xC,
+    MILLI_STOP  = 0xD,
+    MICRO_RUN   = 0xE,
+    MICRO_STOP  = 0xF
 };
 
 // These are the common register identifiers used by the DeviceDrivers in their
@@ -123,8 +125,10 @@ protected:
     int writeIntervals(int handle, int flags, int reg, int count, byte *buf);
     int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
-    int setMilliRateAction(int action, int handle, int flags, int reg, int count);
-    int setMicroRateAction(int action, int handle, int flags, int reg, int count);
+    int milliRateRun(int action, int handle, int flags, int reg, int count);
+    int milliRateStop(int action, int handle, int flags, int reg, int count);
+    int microRateRun(int action, int handle, int flags, int reg, int count);
+    int microRateStop(int action, int handle, int flags, int reg, int count);
 
 private:
 

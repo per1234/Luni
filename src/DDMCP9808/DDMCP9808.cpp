@@ -79,8 +79,12 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
   int address = currentUnit->i2cAddress;
 
-  if (flags == (int)DAF::MILLI_RATE) {
-    DeviceDriver::setMilliRateAction((int)DAC::READ, handle, flags, reg, count);
+  // Take action regarding continuous read, if requested
+
+  if (flags == (int)DAF::MILLI_RUN) {
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count);
   }
 
   switch (reg) {
@@ -132,7 +136,6 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildWritePrefixResponse(count,buf);
   }
-
 
   // Second, deal with connection-required requests
 
@@ -191,25 +194,20 @@ int DDMCP9808::processTimerEvent(int lun, int timerSelector, ClientReporter *rep
   LogicalUnitInfo *cU = logicalUnits[getUnitNumber(lun)];
   if (cU == 0) return ENOTCONN;
 
-  int h = cU->milliAction.handle;
-  int f = cU->milliAction.flags;
-  int r = cU->milliAction.reg;
-  int c = min(cU->milliAction.count,LUI_RESPONSE_BUFFER_SIZE);
+  int h = cU->eventAction[1].handle;
+  int f = cU->eventAction[1].flags;
+  int r = cU->eventAction[1].reg;
+  int c = min(cU->eventAction[1].count,LUI_RESPONSE_BUFFER_SIZE);
 
   if (timerSelector == 1) {
-    if (cU->milliAction.enabled) {
-      int status;
-      if ((cU->milliAction.action & 0xF) == (int)(DAC::READ))  {
-        status = globalDeviceTable->read(h,f,r,c,cU->milliAction.responseBuffer);
-        report->reportRead(status, h, f, r, c, (const byte *)(cU->milliAction.responseBuffer));
-        return status;
-      } else if ((cU->milliAction.action & 0xF) == (int)(DAC::WRITE)) {
-        status = globalDeviceTable->write(h,f,r,c,cU->milliAction.responseBuffer);
-        report->reportWrite(status, h, f, r, c);
+    if (cU->eventAction[1].enabled) {
+      if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
+        int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+        report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
         return status;
       }
     }
   }
-  return ENOTSUP;
+  return ESUCCESS;
 }
 
