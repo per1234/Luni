@@ -14,22 +14,25 @@ March 2016 v0.8 Device Drivers for Arduino and Firmata
 * **Done** v0.8 Add separate DeviceTableDriver object to the driver list during DeviceTable initialization and use it for things like "status() - list of installed drivers"  [implemented in DDMeta]
 * **Started** v0.8 Johnny 5 drivers and tests
 * **Done** v0.8 Write and test Servo device driver, j-5 client API
-* v0.8 Write and test MCP9808 device driver, j-5 client API
-* v0.8 Generate and receive async messages (Sensor, MCP9808, Stepper, Meta)
-* v0.8 extended ACTIONs: Read (continuous fast, continuous slow, once)
-* v0.8 Write and test Stepper device driver, client API
-* v0.8 spec - add discussion of the use of report() and update()
-* v0.8 spec - add discussion of the interface between Features and DeviceDrivers.
-
-
+* **Done** v0.8 Write and test MCP9808 device driver, j-5 client API
+* **Done** v0.8 Generate and receive async messages (MCP9808, Meta)
+* **Done** v0.8 extended ACTIONs: Read (continuous fast, continuous slow, once)
+* v0.9 Write and test Stepper device driver, client API
+* v0.9 Write and test Ping device driver, client API
+* v0.9 spec - add discussion of the use of micro and milli interval timers, device action flags
+* v0.9 spec - add discussion of the interface between Features and DeviceDrivers.
 
 ##Deferred Features and changes.
 
+* **Done** Restore FirmataFeature method names as in ConfigurableFirmata. (tossed the entire CoreFirmata structure and went back to Configurable Firmata as the base)
 * **Done** Error value return facility.
 * **Done**. Get rid of the double initializaton of cmd in Java message classes.
+* Debug info defined by LUN, retrieved with read (?)
+* Put tools ram method in Meta
+
+##Interesting, but not planned for implementation
+
+* Wire, SPI, OneWire Mode Ports
 * Logging facility as a FirmataFeature.
 * Task scheduler as FirmataFeature.
-* **Done** Restore FirmataFeature method names as in ConfigurableFirmata.
-* Debug info defined by LUN, retrieved with read (?)
-* Put tools ram method in Peek
-* Wire, SPI, OneWire Mode Ports
+
