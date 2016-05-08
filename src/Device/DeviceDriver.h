@@ -112,19 +112,16 @@ public:
 protected:
     DECLARE_VERSION
 
+    int deviceNumber;        // the major handle value, ie index in the DeviceTable
     char *unitNamePrefix;
-
-    int buildReadPrefixResponse(int count, byte *buf);
-    int buildWritePrefixResponse(int count, const byte *newPrefix);
 
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;
 
-    int deviceNumber;        // the major handle value, ie index in the DeviceTable
-
     int writeIntervals(int handle, int flags, int reg, int count, byte *buf);
     int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
+    int buildPrefixResponse(int count, byte *buf);
     int milliRateRun(int action, int handle, int flags, int reg, int count);
     int milliRateStop(int action, int handle, int flags, int reg, int count);
     int microRateRun(int action, int handle, int flags, int reg, int count);

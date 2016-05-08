@@ -42,7 +42,11 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildReadPrefixResponse(count,buf);
+      return DeviceDriver::buildPrefixResponse(count,buf);
+
+  case (int)(CDR::Intervals):
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+
  }
 
   // Second, deal with connection-required requests
@@ -53,9 +57,6 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
 
   case (int)(CDR::Stream):
     if ((size_t)count >= (strlen(currentUnit->getWho()) + strlen(currentUnit->getWhat()) + 4)) {
@@ -88,8 +89,9 @@ int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildWritePrefixResponse(count,buf);
+  case (int)(CDR::Intervals):
+    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+
   }
 
   // Second, deal with connection-required requests

@@ -48,7 +48,7 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildReadPrefixResponse(count,buf);
+      return DeviceDriver::buildPrefixResponse(count,buf);
 
   case (int)(REG::DRIVER_COUNT):
     if (count < 2) return EMSGSIZE;
@@ -97,8 +97,6 @@ int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildWritePrefixResponse(count,buf);
   }
 
   // Second, deal with connection-required requests

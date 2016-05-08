@@ -44,7 +44,7 @@ int DDSensor::read(int handle, int flags, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildReadPrefixResponse(count,buf);
+      return DeviceDriver::buildPrefixResponse(count,buf);
 
   }
 

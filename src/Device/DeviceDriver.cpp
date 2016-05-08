@@ -137,7 +137,7 @@ int DeviceDriver::writeIntervals(int handle, int flags, int reg, int count, byte
  * @return       Two null-terminated strings: the unit name root and the name
  * of the device driver
  */
-int DeviceDriver::buildReadPrefixResponse(int count, byte *buf) {
+int DeviceDriver::buildPrefixResponse(int count, byte *buf) {
   int scopeNameLength = strlen(scopeName);
   int prefixLength = strlen(unitNamePrefix);
   if (count < prefixLength + scopeNameLength + 2) return EMSGSIZE;

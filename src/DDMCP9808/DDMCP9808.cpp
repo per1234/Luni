@@ -67,7 +67,7 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
     return DeviceDriver::buildVersionResponse(count, buf);
 
   case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildReadPrefixResponse(count,buf);
+      return DeviceDriver::buildPrefixResponse(count,buf);
   }
 
   // Second, deal with connection-required requests
@@ -132,9 +132,6 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
   // First, handle connection-optional requests
 
   switch (reg) {
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildWritePrefixResponse(count,buf);
   }
 
   // Second, deal with connection-required requests
