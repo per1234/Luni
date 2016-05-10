@@ -146,14 +146,6 @@ int DeviceDriver::buildPrefixResponse(int count, byte *buf) {
   return prefixLength + scopeNameLength + 2;
 }
 
-int DeviceDriver::buildWritePrefixResponse(int count, const byte *newPrefix) {
-  char *temp = strdup((char *)newPrefix);
-  if (temp == 0) return ENOMEM;
-  free(unitNamePrefix);
-  unitNamePrefix = temp;
-  return strlen(unitNamePrefix);
-}
-
 //---------------------------------------------------------------------------
 
 int DeviceDriver::buildVersionResponse(int count, byte *buf) {
