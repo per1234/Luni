@@ -1,7 +1,8 @@
-#ifndef Reporter_h
-#define Reporter_h
+#ifndef ClientReporter_h
+#define ClientReporter_h
 
-#include "DeviceDriver.h"
+#include <Device/DeviceDriver.h>
+#include <arduino.h>
 
 /**
  * This abstract class declares method signatures for any class that would like
@@ -20,6 +21,7 @@ public:
     virtual void reportRead(int status, int handle, int flags, int reg, int count, const byte *dataBytes) = 0;
     virtual void reportWrite(int status, int handle, int flags,  int reg, int count) = 0;
     virtual void reportClose(int status, int handle, int flags ) = 0;
+    virtual void reportString(const byte *dataBytes) = 0;
     virtual void reportError(int status) = 0;
 };
 
