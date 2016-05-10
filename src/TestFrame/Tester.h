@@ -13,6 +13,8 @@ public:
   Tester();
   ~Tester();
 
+  void countDown(int seconds);
+
   void beforeGroup(const char *groupName);
   void beforeTest(const char *testName);
   void afterTest();

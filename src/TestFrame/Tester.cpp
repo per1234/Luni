@@ -19,6 +19,19 @@ Tester::~Tester() {
   }
 }
 
+void Tester::countDown(int seconds) {
+  delay(3000);
+  Serial.println();
+  Serial.print("Pre-test countdown: ");
+  for (int idx = 0; idx < 5; idx++) {
+    Serial.print(5 - idx);
+    Serial.print(" ");
+    delay(1000);
+  }
+  Serial.println();
+}
+
+
 void Tester::beforeGroup(const char *groupName) {
   theGroupName = strdup(groupName);
   Serial.print("\n#Begin group ");
