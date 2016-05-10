@@ -6,10 +6,11 @@
 #include <string.h>
 #include <limits.h>
 
-#include <Framework/ByteOrder.h>
-#include <Framework/SemVer.h>
-#include <Framework/Boards.h>
-#include "ClientReporter.h"
+#include <Device/ByteOrder.h>
+#include <Device/SemVer.h>
+#include <Device/Boards.h>
+// #include "ClientReporter.h"
+class ClientReporter;
 #include "LogicalUnitInfo.h"
 #include "DeviceError.h"
 

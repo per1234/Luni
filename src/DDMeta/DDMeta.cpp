@@ -1,6 +1,6 @@
 #include "DDMeta.h"
 #include <Device/DeviceTable.h>
-#include <Framework/ByteOrder.h>
+#include <Device/ByteOrder.h>
 #include <limits.h>
 
 //---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 #define Port_h
 
 #include <inttypes.h>
-#include <Framework/ByteOrder.h>
+#include <Device/ByteOrder.h>
 
 /**
  * This abstract class defines some basic methods available for
