@@ -99,8 +99,8 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
     reg = (int)(REG::AMBIENT_TEMP);
     v = i2c.read16BE(address, reg);
-    fromHostTo16BE(v, buf);
-    return count;
+    fromHostTo16LE(v, buf);
+    return 2;
 
   case (int)(REG::CONFIG):
   case (int)(REG::UPPER_TEMP):
@@ -111,7 +111,7 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
   case (int)(REG::DEVICE_ID):
     if (count < 2) return EMSGSIZE;
     v16 = i2c.read16BE(address, reg);
-    fromHostTo16BE(v16, buf);
+    fromHostTo16LE(v16, buf);
     return 2;
 
   case (int)(REG::RESOLUTION):
@@ -156,7 +156,7 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
   case (int)(REG::LOWER_TEMP):
   case (int)(REG::CRIT_TEMP):
     if (count == 2) {
-      i2c.write16BE(theI2CAddress, reg, from16BEToHost(buf));
+      i2c.write16BE(theI2CAddress, reg, from16LEToHost(buf));
       return count;
     } else {
       return EINVAL;
@@ -164,7 +164,7 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(REG::RESOLUTION):
     if (count == 1) {
-      i2c.write8BE(theI2CAddress, reg, from8BEToHost(buf));
+      i2c.write8BE(theI2CAddress, reg, from8LEToHost(buf));
       return count;
     } else {
       return EINVAL;
