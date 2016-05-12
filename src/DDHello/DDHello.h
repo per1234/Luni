@@ -25,8 +25,8 @@ public:
   int processTimerEvent(int lun, int timerSelector, ClientReporter *r);
 
   enum class REG : int {
-    INTERJECTION = 0,
-    OBJECT = 1,
+    INTERJECTION = 256,
+    OBJECT = 257,
   };
 
 };
