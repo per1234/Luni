@@ -42,14 +42,6 @@ TestManager::~TestManager() {
 
 // --------------------------------------------------------
 
-void TestManager::runCommon() {
-  // int idx = 0;
-  // while (commonTests[idx] != 0) {
-  //   commonTest[idx].execute(this, rpt);
-  //   idx++;
-  // }
-}
-
 void TestManager::runSelected() {
   int idx = 0;
   while (selectedTests[idx] != 0) {

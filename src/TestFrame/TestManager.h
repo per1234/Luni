@@ -16,7 +16,6 @@ public:
   ~TestManager();
 
   void runSelected();
-  void runCommon();
 
   void dispatchTimers();
   void countDown(int seconds);
