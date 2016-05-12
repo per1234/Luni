@@ -77,6 +77,14 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
   LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
+  // Take action regarding continuous read, if requested
+
+  if (flags == (int)DAF::MILLI_RUN) {
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count);
+  }
+
   switch (reg) {
 
   case (int)(CDR::Intervals):
@@ -125,7 +133,7 @@ int DDMeta::close(int handle, int flags) {
 // Collect duration samples.  The sample array is actually 0..SAMPLE_COUNT,
 // and the useful samples are in 1..SAMPLE_COUNT.
 
-int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
+int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
 
   LUMeta *cU = static_cast<LUMeta *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;
@@ -139,6 +147,21 @@ int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *r) {
     cU->isSampleBufferFull[timerSelector] |= (cU->sampleIndex[timerSelector] == SAMPLE_COUNT);
     cU->sampleIndex[timerSelector] = 1 + ((cU->sampleIndex[timerSelector]) % (int)(SAMPLE_COUNT));
 
+    if (timerSelector == 1) {
+
+      int h = cU->eventAction[1].handle;
+      int f = cU->eventAction[1].flags;
+      int r = cU->eventAction[1].reg;
+      int c = min(cU->eventAction[1].count,LUI_RESPONSE_BUFFER_SIZE);
+
+      if (cU->eventAction[1].enabled) {
+        if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
+          int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+          report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
+          return status;
+        }
+      }
+    }
     return ESUCCESS;
 
   default:      // unrecognized timer index
@@ -159,17 +182,15 @@ int DDMeta::readATI(int handle, int flags, int reg, int count, byte *buf) {
   for (int timerIndex = 0; timerIndex < 2; timerIndex++) {
     unsigned long sum = 0;
 
-    if (cU->intervalTime[timerIndex] != 0) {
-      if (!(cU->isSampleBufferFull[timerIndex])) return ENODATA;
-      for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
-        sum += cU->samples[timerIndex][idx];
-      }
-      avg = sum / SAMPLE_COUNT;
-    } else {
-      avg = 0;
+    if ((cU->intervalTime[timerIndex] == 0) ||
+      (!(cU->isSampleBufferFull[timerIndex]))) {
+      return ENODATA;
     }
+    for (int idx = 1; idx <= SAMPLE_COUNT; idx++) {
+      sum += cU->samples[timerIndex][idx];
+    }
+    avg = sum / SAMPLE_COUNT;
     fromHostTo32LE(avg, buf + (4 * timerIndex));
   }
-
   return 8;
 }
