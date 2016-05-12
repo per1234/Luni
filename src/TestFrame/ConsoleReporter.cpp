@@ -88,7 +88,7 @@ void ConsoleReporter::sendDeviceResponse(int action, int status, int handle, int
   Serial.print(", count: ");
   Serial.print(count);
 
-  if (dataBytes != 0) {
+  if (dataBytes != 0 && status >= 0) {
     Serial.print(", dataBytes: ");
     if (action == (int)(DAC::OPEN)) {
       rawCount = strlen((const char *)dataBytes)+1;
