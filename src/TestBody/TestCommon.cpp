@@ -1,11 +1,11 @@
 #include <LuniLib.h>
-#include "DDTCommon.h"
+#include "TestCommon.h"
 
-DDTCommon::DDTCommon(const char * unitID) : DeviceDriverTest(__func__, unitID) {
+TestCommon::TestCommon(const char * unitID) : DeviceDriverTest(__func__, unitID) {
 
 }
 
-void DDTCommon::doTest(TestManager *tst, ClientReporter *rpt) {
+void TestCommon::doTest(TestManager *tst, ClientReporter *rpt) {
 
   int flags;
   int handle;
@@ -46,8 +46,9 @@ void DDTCommon::doTest(TestManager *tst, ClientReporter *rpt) {
   reg = (int)(CDR::DriverVersion);
   status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
-  rpt->reportString(datablock);
-
+  if (status > 0) {
+    rpt->reportString(datablock);
+  }
   tst->afterTest();
 
   // --------------------------------------------------------
@@ -58,7 +59,9 @@ void DDTCommon::doTest(TestManager *tst, ClientReporter *rpt) {
   reg = (int)(CDR::UnitNamePrefix);
   status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
-  rpt->reportString(datablock);
+  if (status > 0) {
+    rpt->reportString(datablock);
+  }
 
   tst->assertTrue("Read error.", (status >= 0));
 

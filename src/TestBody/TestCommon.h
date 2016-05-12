@@ -1,14 +1,14 @@
-#ifndef DDTCommon_h
-#define DDTCommon_h
+#ifndef TestCommon_h
+#define TestCommon_h
 
 #include <LuniLib.h>
 #include <TestFrame/TestManager.h>
 #include <TestFrame/DeviceDriverTest.h>
 #include <Device/ClientReporter.h>
 
-class DDTCommon : public DeviceDriverTest {
+class TestCommon : public DeviceDriverTest {
 public:
-  DDTCommon(const char *unitIdentifier);
+  TestCommon(const char *unitIdentifier);
   void doTest(TestManager *tst, ClientReporter *r);
 };
 
