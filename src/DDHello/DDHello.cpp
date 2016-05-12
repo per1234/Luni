@@ -1,11 +1,13 @@
 #include "DDHello.h"
 
+//---------------------------------------------------------------------------
+
+extern DeviceTable *globalDeviceTable;
+
 /**
  * This class defines a simple device driver as a sort of
  * HelloWorld component for device drivers and their usage.
  */
-//---------------------------------------------------------------------------
-
 DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
   DEFINE_VERSION_PRE(0, 8, 0, beta)
 }
@@ -56,6 +58,14 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
   LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
+  // Take action regarding continuous read, if requested
+
+  if (flags == (int)DAF::MILLI_RUN) {
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count);
+  }
+
   switch (reg) {
 
   case (int)(CDR::Stream):
@@ -90,7 +100,7 @@ int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
   switch (reg) {
 
   case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   }
 
@@ -119,4 +129,30 @@ int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 
 int DDHello::close(int handle, int flags) {
   return DeviceDriver::close(handle, flags);
+}
+
+//---------------------------------------------------------------------------
+
+// If a continuous read has been requested, process it.
+
+int DDHello::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
+
+  LogicalUnitInfo *cU = logicalUnits[getUnitNumber(lun)];
+  if (cU == 0) return ENOTCONN;
+
+  int h = cU->eventAction[1].handle;
+  int f = cU->eventAction[1].flags;
+  int r = cU->eventAction[1].reg;
+  int c = min(cU->eventAction[1].count,LUI_RESPONSE_BUFFER_SIZE);
+
+  if (timerSelector == 1) {
+    if (cU->eventAction[1].enabled) {
+      if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
+        int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+        report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
+        return status;
+      }
+    }
+  }
+  return ESUCCESS;
 }

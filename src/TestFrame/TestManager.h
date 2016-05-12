@@ -1,18 +1,24 @@
-#ifndef test_assertions_h
-#define test_assertions_h
+#ifndef TestManager_h
+#define TestManager_h
 
 #include <Arduino.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "Logger.h"
 
-class Tester {
+#include "Logger.h"
+#include <Device/ClientReporter.h>
+
+class TestManager {
 public:
 
-  Tester();
-  ~Tester();
+  TestManager(const char *filename);
+  ~TestManager();
 
+  void runSelected();
+  void runCommon();
+
+  void dispatchTimers();
   void countDown(int seconds);
 
   void beforeGroup(const char *groupName);
@@ -32,6 +38,7 @@ public:
 private:
 
   Logger *logger;
+  ClientReporter *rpt;
 
   const char *theTestName;
   const char *theGroupName;
@@ -40,6 +47,6 @@ private:
   int groupFailureCount;
 };
 
-#include "TesterTemplates.h"
+#include "TestManagerTemplates.h"
 
 #endif
