@@ -1,12 +1,12 @@
 #include <LuniLib.h>
-#include <DDHello/DDHello.h>
-#include "TestHello.h"
+#include <DDMCP9808/DDMCP9808.h>
+#include "TestMCP9808.h"
 
-TestHello::TestHello(const char * unitID) : DeviceDriverTest(__func__, unitID) {
+TestMCP9808::TestMCP9808(const char * unitID) : DeviceDriverTest(__func__, unitID) {
 
 }
 
-void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
+void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   int flags;
   int handle;
@@ -45,34 +45,28 @@ void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   // Open.  Put device specific one-shot tests below this comment.
   // =============================================================
 
-  tst->beforeTest("ReadInterjection");
+  tst->beforeTest("ReadRegisters");
 
-  flags = (int)(DAF::NONE);
-  reg = (int)(DDHello::REG::INTERJECTION);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
-  rpt->reportRead(status, handle, flags, reg, count, datablock);
-  if (status > 0) {
-    rpt->reportString(datablock);
-  }
+    for (int r = 1; r < 9; r++) {
+      flags = (int)(DAF::NONE);
+      count = (r == 8) ? 1 : 2;
 
-  tst->assertTrue("Read error.", (status >= 0));
+      status = globalDeviceTable->read(handle, flags, r, count, datablock);
+      rpt->reportRead(status, handle, flags, r, count, datablock);
 
-  tst->afterTest();
+      tst->assertEquals("Device status() count assertEquals:", count, status);
 
-  // --------------------------------------------------------
-
-  tst->beforeTest("ReadObject");
-
-  flags = (int)(DAF::NONE);
-  reg = (int)(DDHello::REG::OBJECT);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
-  rpt->reportRead(status, handle, flags, reg, count, datablock);
-  if (status > 0) {
-    rpt->reportString(datablock);
-  }
-
-  tst->assertTrue("Read error.", (status >= 0));
-
+      switch (r) {
+        case (int)(DDMCP9808::REG::MANUF_ID):
+          log->info("Manufacturer ID: ", from16LEToHost(datablock));
+          tst->assertEquals("MCP9808 MANUF_ID assertEquals", 0x54, from16LEToHost(datablock));
+          break;
+        case (int)(DDMCP9808::REG::DEVICE_ID):
+          log->info("Device ID: ", from16LEToHost(datablock));
+          tst->assertEquals("MCP9808 DEVICE_ID assertEquals", 0x400, from16LEToHost(datablock));
+          break;
+      }
+    }
   tst->afterTest();
 
   // --------------------------------------------------------
@@ -83,9 +77,6 @@ void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   reg = (int)(CDR::Stream);
   status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
-  if (status > 0) {
-    rpt->reportString(datablock);
-  }
 
   tst->assertTrue("Read error.", (status >= 0));
 
@@ -96,13 +87,10 @@ void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   // =============================================================
 
   tst->beforeTest("Close");
-
   flags = (int)(DAF::NONE);
   status = globalDeviceTable->close(handle, flags);
   rpt->reportClose(status, handle, flags);
-
   tst->assertTrue("Close error.", (status >= 0));
-
   tst->afterTest();
 
   // =============================================================
@@ -125,8 +113,8 @@ void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::Intervals);
-  fromHostTo32LE(0UL,datablock);
-  fromHostTo32LE(5000UL,datablock+4);
+  fromHostTo32LE(512UL,datablock);
+  fromHostTo32LE(4096UL,datablock+4);
   count = 8;
   status = globalDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
@@ -145,15 +133,11 @@ void TestHello::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::MILLI_RUN);
   reg = (int)(CDR::Stream);
-  count = BUF_SIZE;
+  count = 8;
   status = globalDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
-  if (status > 0) {
-    rpt->reportString(datablock);
-  }
 
   tst->afterTest();
-
 
   // --------------------------------------------------------
 

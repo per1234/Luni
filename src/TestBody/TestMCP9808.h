@@ -1,5 +1,5 @@
-#ifndef TestHello_h
-#define TestHello_h
+#ifndef TestMCP9808_h
+#define TestMCP9808_h
 
 #include <LuniLib.h>
 #include <Device/ClientReporter.h>
@@ -8,9 +8,9 @@
 #include <TestFrame/DeviceDriverTest.h>
 #include <TestFrame/Logger.h>
 
-class TestHello : public DeviceDriverTest {
+class TestMCP9808 : public DeviceDriverTest {
 public:
-  TestHello(const char *unitIdentifier);
+  TestMCP9808(const char *unitIdentifier);
   void doTest(TestManager *tst, ClientReporter *r, Logger *log);
 };
 

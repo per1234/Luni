@@ -5,6 +5,7 @@
 #include <Device/DeviceTable.h>
 #include <Device/ClientReporter.h>
 
+#include "Logger.h"
 #include "TestManager.h"
 
 extern DeviceTable *globalDeviceTable;
@@ -13,7 +14,7 @@ class DeviceDriverTest {
 
 public:
   DeviceDriverTest(const char *groupName, const char *unitIdentifier);
-  virtual void doTest(TestManager *tst, ClientReporter *r) = 0;
+  virtual void doTest(TestManager *tst, ClientReporter *r, Logger *log) = 0;
 
 protected:
   char *groupID;

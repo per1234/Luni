@@ -45,7 +45,7 @@ TestManager::~TestManager() {
 void TestManager::runSelected() {
   int idx = 0;
   while (selectedTests[idx] != 0) {
-    selectedTests[idx]->doTest(this, rpt);
+    selectedTests[idx]->doTest(this, rpt, logger);
     idx++;
   }
 }

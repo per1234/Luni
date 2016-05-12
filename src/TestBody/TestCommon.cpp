@@ -5,7 +5,7 @@ TestCommon::TestCommon(const char * unitID) : DeviceDriverTest(__func__, unitID)
 
 }
 
-void TestCommon::doTest(TestManager *tst, ClientReporter *rpt) {
+void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   int flags;
   int handle;

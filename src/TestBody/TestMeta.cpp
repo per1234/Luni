@@ -6,7 +6,7 @@ TestMeta::TestMeta(const char * unitID) : DeviceDriverTest(__func__, unitID) {
 
 }
 
-void TestMeta::doTest(TestManager *tst, ClientReporter *rpt) {
+void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   int flags;
   int handle;
@@ -42,7 +42,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt) {
   tst->afterTest();
 
   // =============================================================
-  // Put device specific tests between here and the close() below.
+  // Open.  Put device specific one-shot tests below this comment.
   // =============================================================
 
   tst->beforeTest("ReadAvgIntervals");
@@ -72,7 +72,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt) {
   tst->afterTest();
 
   // =============================================================
-  // Put device specific tests between here and the open() above.
+  // Close.  Put device specific one-shot tests above this comment.
   // =============================================================
 
   tst->beforeTest("Close");
