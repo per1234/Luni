@@ -206,7 +206,7 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::milliRateRun(int action, int handle, int flags, int reg, int count){
+int DeviceDriver::milliRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LogicalUnitInfo *currentUnit = logicalUnits[lun];
@@ -220,7 +220,7 @@ int DeviceDriver::milliRateRun(int action, int handle, int flags, int reg, int c
   currentUnit->eventAction[1].enabled = true;
 }
 
-int DeviceDriver::milliRateStop(int action, int handle, int flags, int reg, int count){
+int DeviceDriver::milliRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LogicalUnitInfo *currentUnit = logicalUnits[lun];
@@ -229,6 +229,6 @@ int DeviceDriver::milliRateStop(int action, int handle, int flags, int reg, int 
   currentUnit->eventAction[1].enabled = false;
 }
 
-int DeviceDriver::microRateRun(int action, int handle, int flags, int reg, int count) {}
-int DeviceDriver::microRateStop(int action, int handle, int flags, int reg, int count) {}
+int DeviceDriver::microRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {}
+int DeviceDriver::microRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {}
 

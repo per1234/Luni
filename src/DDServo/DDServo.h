@@ -2,6 +2,8 @@
 #define DDServo_h
 
 #include <Device/DeviceDriver.h>
+#include <Device/DeviceDriver.h>
+#include <Device/DeviceTable.h>
 #include "LUServo.h"
 
 class DDServo: public DeviceDriver {
@@ -13,6 +15,7 @@ public:
   int read(int handle, int flags, int reg, int count, byte *buf);
   int write(int handle, int flags, int reg, int count, byte *buf);
   int close(int handle, int flags);
+  int processTimerEvent(int lun, int timerSelector, ClientReporter *report);
 
   enum class REG : int {
     PIN = 256,

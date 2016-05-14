@@ -11,7 +11,9 @@ extern DeviceTable *globalDeviceTable;
  *
  * The device is controlled via I2C.  It expects that 16-bit register values
  * will be written in big-endian order, that is, the most significant byte
- * first, the least significant byte last.
+ * first, the least significant byte last.  However, that detail is handled
+ * here in the driver - interaction with the caller is all handled in Little
+ * Endian order as documented in the specification for this device driver.
  */
 DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
@@ -128,13 +130,6 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
-
-  // First, handle connection-optional requests
-
-  switch (reg) {
-  }
-
-  // Second, deal with connection-required requests
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;

@@ -123,10 +123,10 @@ protected:
     int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
     int buildPrefixResponse(int count, byte *buf);
-    int milliRateRun(int action, int handle, int flags, int reg, int count);
-    int milliRateStop(int action, int handle, int flags, int reg, int count);
-    int microRateRun(int action, int handle, int flags, int reg, int count);
-    int microRateStop(int action, int handle, int flags, int reg, int count);
+    int milliRateRun(int action, int handle, int flags, int reg, int count, byte *buf = 0);
+    int milliRateStop(int action, int handle, int flags, int reg, int count, byte *buf = 0);
+    int microRateRun(int action, int handle, int flags, int reg, int count, byte *buf = 0);
+    int microRateStop(int action, int handle, int flags, int reg, int count, byte *buf = 0);
 
 private:
 

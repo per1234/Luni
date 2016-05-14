@@ -17,6 +17,14 @@ private:
   int minPulse = MIN_PULSE_WIDTH;
   int maxPulse = MAX_PULSE_WIDTH;
 
+  // Track the current continuous write profile
+
+  int pulseIncrement;
+
+  int currentStep = 0;
+  int stepIncrement = +1;
+  int stepCount = 10;
+
 };
 
 #endif
