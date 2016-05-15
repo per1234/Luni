@@ -9,7 +9,7 @@
 class DDServo: public DeviceDriver {
 
 public:
-  DDServo(const char *unitName = "Servo", int count = 12);
+  DDServo(const char *unitName = "Servo", int count = 2);
 
   int open(int opts, int flags, const char *name);
   int read(int handle, int flags, int reg, int count, byte *buf);

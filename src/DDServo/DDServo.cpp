@@ -28,7 +28,7 @@ DDServo::DDServo(const char *dName, int lunCount) :
 
   if (logicalUnitCount > 0) {
     servos = new LUServo[logicalUnitCount];
-    if (servos == 0) {
+    if (servos == 0) {            // not enough memory
       delete logicalUnits;
       logicalUnitCount = 0;
     }
@@ -42,19 +42,19 @@ DDServo::DDServo(const char *dName, int lunCount) :
 
 int DDServo::open(int opts, int flags, const char *name) {
   int lun;
-  int status = DeviceDriver::open(opts, flags, name);
+  int status = DeviceDriver::open(opts, flags, name);   // find an unused lun
   if (status < 0) {
     return status;
   }
 
   lun = status;
-  LUServo *currentUnit = &servos[lun];
+  LUServo *currentUnit = &servos[lun]; // get pointer to the corresponding Servo object
 
   currentUnit->detach();
   currentUnit->minPulse = MIN_PULSE_WIDTH;
   currentUnit->maxPulse = MAX_PULSE_WIDTH;
 
-  logicalUnits[lun] = currentUnit;
+  logicalUnits[lun] = currentUnit;      // remember that this lun is in use
   return lun;
 }
 
@@ -74,28 +74,29 @@ int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(CDR::UnitNamePrefix):
       return DeviceDriver::buildPrefixResponse(count,buf);
-
   }
 
-  //  Registers for which we must have a handle (ie, open() has
+  //  Second, registers for which we must have a handle (ie, open() has
   //  been done) but we don't need to be attached to a pin
 
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[getUnitNumber(handle)]);
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
+
   if (count < 0) return EINVAL;
 
   switch (reg) {
 
     case (int)(CDR::Intervals):
       return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
-
   }
 
-  //  Registers for which we must have a handle (ie, open() has
+  //  Third, registers for which we must have a handle (ie, open() has
   //  been done) AND we need to be attached to a pin (and thus
   //  a servo)
 
-  if (!currentUnit->attached()) return ENODATA;
+  if (!(currentUnit->attached())) return ENODATA;
 
   switch (reg) {
 
@@ -135,23 +136,18 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
   int hiPulse;
   int pos;
 
+  // First, handle registers that can be written even before a connection
+  // has been made.
+
+  // ... No applicable registers ...
+
+  //  Second, handle registers for which we must have a handle (ie, open() has
+  //  been done) but we don't need to be attached to a pin
+
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
-
-  // Enable continuous write, if requested
-
-  if (flags == (int)DAF::MILLI_RUN) {
-    currentUnit->pulseIncrement = (currentUnit->maxPulse-currentUnit->minPulse) / currentUnit->stepCount;
-    currentUnit->currentStep = 0;
-    DeviceDriver::milliRateRun((int)DAC::WRITE, handle, flags, reg, count,buf);
-  } else if (flags == (int)DAF::MILLI_STOP) {
-    DeviceDriver::milliRateStop((int)DAC::WRITE, handle, flags, reg, count,buf);
-  }
-
-  // Perform the requested write(), either one and done, or as the first of a
-  // series.
 
   switch (reg) {
 
@@ -170,6 +166,26 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
     if (channel == 255) return EMFILE;
     currentUnit->pin = thePin;
     return 2;
+
+  }
+
+  //  Third, registers for which we must have a handle (ie, open() has
+  //  been done) AND we need to be attached to a pin (and thus
+  //  a servo)
+
+  if (!currentUnit->attached()) return EREMOTEIO;
+
+  // Enable continuous write, if requested
+
+  if (flags == (int)DAF::MILLI_RUN) {
+    currentUnit->pulseIncrement = (currentUnit->maxPulse-currentUnit->minPulse) / currentUnit->stepCount;
+    currentUnit->currentStep = 0;
+    DeviceDriver::milliRateRun((int)DAC::WRITE, handle, flags, reg, count,buf);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::WRITE, handle, flags, reg, count,buf);
+  }
+
+  switch (reg) {
 
   case (int)(REG::RANGE_MICROSECONDS):
     if (count != 4) return EMSGSIZE;
@@ -224,6 +240,7 @@ int DDServo::close(int handle, int flags) {
 int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
   int nextStep;
   int nextPulse;
+  int nextDegrees;
   int status;
 
   LUServo *cU = static_cast<LUServo *>(logicalUnits[getUnitNumber(lun)]);
@@ -249,9 +266,13 @@ int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *repor
         nextPulse = cU->minPulse + (nextStep * cU->pulseIncrement);
         Serial.print("nextPulse: ");
         Serial.println(nextPulse);
-        fromHostTo16LE(nextPulse,cU->eventAction[1].responseBuffer);
+        nextDegrees = 30 + (nextStep * 10);
+        Serial.print("nextDegrees: ");
+        Serial.println(nextDegrees);
+        fromHostTo16LE(nextDegrees,cU->eventAction[1].responseBuffer);
         f = 0;
         c = 2;
+        r = (int)(REG::POSITION_DEGREES);
         status = globalDeviceTable->write(h, f, r, c, cU->eventAction[1].responseBuffer);
         report->reportWrite(status, h, f, r, c);
         return status;

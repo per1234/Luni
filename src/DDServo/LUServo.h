@@ -3,7 +3,7 @@
 
 #include <Servo.h>
 
-class LUServo: public LogicalUnitInfo, Servo {
+class LUServo: public LogicalUnitInfo, public Servo {
 
   friend class DDServo;
 
