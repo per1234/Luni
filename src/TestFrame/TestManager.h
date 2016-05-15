@@ -39,6 +39,7 @@ private:
   Logger *logger;
   ClientReporter *rpt;
 
+  const char *theFileName;
   const char *theTestName;
   const char *theGroupName;
 

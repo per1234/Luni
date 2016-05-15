@@ -8,7 +8,6 @@
 
 extern DeviceDriver *selectedDevices[];
 extern DeviceDriverTest *selectedTests[];
-//extern DeviceDriverTest *commonTests[];
 
 DeviceTable *globalDeviceTable;
 
@@ -22,10 +21,10 @@ DeviceTable *globalDeviceTable;
   logger = new Logger("TestManager");
   logger->setCurrentLogLevel(LogLevel::DEBUG);
 
+  theFileName = filename;
   theTestName = "Unnamed";
   testFailureCount = 0;
   groupFailureCount = 0;
-
 }
 
 TestManager::~TestManager() {
@@ -57,7 +56,7 @@ void TestManager::dispatchTimers() {
 // --------------------------------------------------------
 
 void TestManager::countDown(int seconds) {
-  delay(3000);
+  delay(5000);
   Serial.println();
   Serial.print("Pre-test countdown: ");
   for (int idx = 0; idx < seconds; idx++) {
@@ -66,6 +65,10 @@ void TestManager::countDown(int seconds) {
     delay(1000);
   }
   Serial.println();
+
+  Serial.print("\nFile: ");
+  Serial.println(theFileName);
+
 }
 
 
