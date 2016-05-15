@@ -2,8 +2,7 @@
 #define LogicalUnitInfo_h
 
 #include <arduino.h>
-
-#define LUI_RESPONSE_BUFFER_SIZE 32
+#include "DeviceDefine.h"
 
 class LogicalUnitInfo {
 
@@ -21,7 +20,8 @@ public:
     int flags;
     int reg;
     int count;
-    byte responseBuffer[LUI_RESPONSE_BUFFER_SIZE];
+    byte queryBuffer[QUERY_BUFFER_SIZE];
+    byte responseBuffer[RESPONSE_BUFFER_SIZE];
   };
 
   // timer[0] counts in microseconds, timer[1] counts in milliseconds
