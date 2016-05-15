@@ -17,7 +17,8 @@ extern DeviceTable *globalDeviceTable;
  * and has no way to reclaim slot indexes no longer in use, this device driver
  * constructor allocates an LUServo object for every available lun and then just
  * points to them in the logicalUnits pointer array when needed for open() and
- * zeroes out the pointer for close().
+ * zeroes out the pointer for close().  (The more common method is to create and
+ * free LUI objects as luns are opened and closed.)
  *
  * If the memory allocations fail, logicalUnitCount is set to 0 and all calls to
  * the open() method for this device will fail with ENXIO, No such device or address.
@@ -26,15 +27,16 @@ DDServo::DDServo(const char *dName, int lunCount) :
   DeviceDriver(dName, lunCount) {
   DEFINE_VERSION_PRE(0, 8, 0, beta)
 
-  if (logicalUnitCount > 0) {
+  servos = 0;
+  if ((logicalUnitCount > 0) && (logicalUnitCount <= MAX_SERVOS)) {
     servos = new LUServo[logicalUnitCount];
-    if (servos == 0) {            // not enough memory
-      delete logicalUnits;
-      logicalUnitCount = 0;
-    }
+  }
+  if (servos == 0) {            // not enough memory or bad lun count
+    delete logicalUnits;        // undo base class initialization
+    logicalUnitCount = 0;
   }
   for (int idx = 0; idx < logicalUnitCount; idx++) {
-    logicalUnits[idx] = 0;
+    logicalUnits[idx] = 0;      // all luns are closed initially
   }
 }
 
@@ -234,13 +236,12 @@ int DDServo::close(int handle, int flags) {
 
 // One use of continuous write for this device is to have the servo follow a
 // position profile.  The default, and currently the only, profile is a simple
-// sweep between limits, but function tables or other methods would be easy
-// to implement.
+// sweep between limits, but function tables or other interesting algorithms
+// would be easy to implement for servos and other devices.
 
 int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
   int nextStep;
   int nextPulse;
-  int nextDegrees;
   int status;
 
   LUServo *cU = static_cast<LUServo *>(logicalUnits[getUnitNumber(lun)]);
@@ -249,9 +250,10 @@ int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *repor
   int h = cU->eventAction[1].handle;
   int f = cU->eventAction[1].flags;
   int r = cU->eventAction[1].reg;
-  int c = min(cU->eventAction[1].count,LUI_RESPONSE_BUFFER_SIZE);
+  int c = min(cU->eventAction[1].count,QUERY_BUFFER_SIZE);
 
-  // Is it time to do another position write?  If so, calculate new position and set it.
+  // Is it time to do another write?
+  // If so, calculate new position and set it.
 
   if ((timerSelector == 1) && (cU->eventAction[1].enabled)) {
     if ((cU->eventAction[1].action) == (int)(DAC::WRITE))  {
@@ -264,16 +266,11 @@ int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *repor
         }
         cU->currentStep = nextStep;
         nextPulse = cU->minPulse + (nextStep * cU->pulseIncrement);
-        Serial.print("nextPulse: ");
-        Serial.println(nextPulse);
-        nextDegrees = 30 + (nextStep * 10);
-        Serial.print("nextDegrees: ");
-        Serial.println(nextDegrees);
-        fromHostTo16LE(nextDegrees,cU->eventAction[1].responseBuffer);
+        fromHostTo16LE(nextPulse,cU->eventAction[1].queryBuffer);
         f = 0;
         c = 2;
-        r = (int)(REG::POSITION_DEGREES);
-        status = globalDeviceTable->write(h, f, r, c, cU->eventAction[1].responseBuffer);
+        r = (int)(REG::POSITION_MICROSECONDS);
+        status = globalDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
         report->reportWrite(status, h, f, r, c);
         return status;
       }
