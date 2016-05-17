@@ -30,7 +30,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   if (status > 0) {
     rpt->reportString(datablock);
@@ -50,7 +50,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::NONE);
   reg = (int)(DDMeta::REG::AVG_INTERVALS);
   count = 8;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -64,7 +64,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::NONE);
   reg = (int)(DDMeta::REG::DRIVER_COUNT);
   count = 2;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -78,7 +78,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   tst->beforeTest("Close");
 
   flags = (int)(DAF::NONE);
-  status = globalDeviceTable->close(handle, flags);
+  status = gDeviceTable->close(handle, flags);
   rpt->reportClose(status, handle, flags);
 
   tst->assertTrue("Close error.", (status >= 0));
@@ -97,7 +97,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   handle = status;
 
@@ -108,7 +108,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   fromHostTo32LE(512UL,datablock);
   fromHostTo32LE(4096UL,datablock+4);
   count = 8;
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
 
   // Read Intervals
@@ -116,7 +116,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::Intervals);
   count = 8;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -126,7 +126,7 @@ void TestMeta::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::MILLI_RUN);
   reg = (int)(DDMeta::REG::AVG_INTERVALS);
   count = 8;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->afterTest();

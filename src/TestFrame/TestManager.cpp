@@ -9,14 +9,13 @@
 extern DeviceDriver *selectedDevices[];
 extern DeviceDriverTest *selectedTests[];
 
-DeviceTable *globalDeviceTable;
+DeviceTable *gDeviceTable;
 
 // --------------------------------------------------------
 
-  TestManager::TestManager(const char *filename) {
-
+TestManager::TestManager(const char *filename) {
   rpt = new ConsoleReporter();
-  globalDeviceTable = new DeviceTable(selectedDevices,rpt);
+  gDeviceTable = new DeviceTable(selectedDevices,rpt);
 
   logger = new Logger("TestManager");
   logger->setCurrentLogLevel(LogLevel::DEBUG);
@@ -50,7 +49,7 @@ void TestManager::runSelected() {
 }
 
 void TestManager::dispatchTimers() {
-  globalDeviceTable->dispatchTimers();
+  gDeviceTable->dispatchTimers();
 }
 
 // --------------------------------------------------------

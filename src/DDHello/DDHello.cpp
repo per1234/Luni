@@ -2,7 +2,7 @@
 
 //---------------------------------------------------------------------------
 
-extern DeviceTable *globalDeviceTable;
+extern DeviceTable *gDeviceTable;
 
 /**
  * This class defines a simple device driver as a sort of
@@ -148,7 +148,7 @@ int DDHello::processTimerEvent(int lun, int timerSelector, ClientReporter *repor
   if (timerSelector == 1) {
     if (cU->eventAction[1].enabled) {
       if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
-        int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+        int status = gDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
         report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
         return status;
       }

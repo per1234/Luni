@@ -30,7 +30,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   if (status > 0) {
     rpt->reportString(datablock);
@@ -51,7 +51,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
       flags = (int)(DAF::NONE);
       count = (r == 8) ? 1 : 2;
 
-      status = globalDeviceTable->read(handle, flags, r, count, datablock);
+      status = gDeviceTable->read(handle, flags, r, count, datablock);
       rpt->reportRead(status, handle, flags, r, count, datablock);
 
       tst->assertEquals("Device status() count assertEquals:", count, status);
@@ -75,7 +75,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::Stream);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
+  status = gDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -88,7 +88,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   tst->beforeTest("Close");
   flags = (int)(DAF::NONE);
-  status = globalDeviceTable->close(handle, flags);
+  status = gDeviceTable->close(handle, flags);
   rpt->reportClose(status, handle, flags);
   tst->assertTrue("Close error.", (status >= 0));
   tst->afterTest();
@@ -105,7 +105,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   handle = status;
 
@@ -116,7 +116,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   fromHostTo32LE(512UL,datablock);
   fromHostTo32LE(4096UL,datablock+4);
   count = 8;
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
 
   // Read Intervals
@@ -124,7 +124,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::Intervals);
   count = 8;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -134,7 +134,7 @@ void TestMCP9808::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = (int)(DAF::MILLI_RUN);
   reg = (int)(CDR::Stream);
   count = 8;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->afterTest();

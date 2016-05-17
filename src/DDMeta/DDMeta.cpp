@@ -5,7 +5,7 @@
 
 //---------------------------------------------------------------------------
 
-extern DeviceTable *globalDeviceTable;
+extern DeviceTable *gDeviceTable;
 
 /**
  * This DDMeta class is an administrative and development tool.  As a device
@@ -52,20 +52,20 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
 
   case (int)(REG::DRIVER_COUNT):
     if (count < 2) return EMSGSIZE;
-    fromHostTo16LE(globalDeviceTable->deviceCount, buf);
+    fromHostTo16LE(gDeviceTable->deviceCount, buf);
     return 2;
 
   case (int)(REG::DRIVER_VERSION_LIST):
-    for (int idx=0; idx<globalDeviceTable->deviceCount; idx++) {
-      status = globalDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
-      globalDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
+    for (int idx=0; idx<gDeviceTable->deviceCount; idx++) {
+      status = gDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
+      gDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::DriverVersion), RESPONSE_BUFFER_SIZE, versionBuffer);
     }
     return ESUCCESS;
 
   case (int)(REG::UNIT_NAME_PREFIX_LIST):
-    for (int idx=0; idx<globalDeviceTable->deviceCount; idx++) {
-      status = globalDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
-      globalDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
+    for (int idx=0; idx<gDeviceTable->deviceCount; idx++) {
+      status = gDeviceTable->read(makeHandle(idx,0), flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
+      gDeviceTable->cr->reportRead(status, handle, flags, (int)(CDR::UnitNamePrefix), RESPONSE_BUFFER_SIZE, versionBuffer);
     }
     return ESUCCESS;
 }
@@ -156,7 +156,7 @@ int DDMeta::processTimerEvent(int lun, int timerSelector, ClientReporter *report
 
       if (cU->eventAction[1].enabled) {
         if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
-          int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+          int status = gDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
           report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
           return status;
         }

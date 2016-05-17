@@ -2,7 +2,7 @@
 
 //---------------------------------------------------------------------------
 
-extern DeviceTable *globalDeviceTable;
+extern DeviceTable *gDeviceTable;
 
 /**
  * This device driver is for servo controllers.  It uses the basic servo
@@ -270,7 +270,7 @@ int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *repor
         f = 0;
         c = 2;
         r = (int)(REG::POSITION_MICROSECONDS);
-        status = globalDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
+        status = gDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
         report->reportWrite(status, h, f, r, c);
         return status;
       }

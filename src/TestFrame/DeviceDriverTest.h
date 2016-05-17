@@ -8,7 +8,7 @@
 #include "Logger.h"
 #include "TestManager.h"
 
-extern DeviceTable *globalDeviceTable;
+extern DeviceTable *gDeviceTable;
 
 class DeviceDriverTest {
 

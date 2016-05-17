@@ -29,7 +29,7 @@ void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   rpt->reportString(datablock);
 
@@ -44,7 +44,7 @@ void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::DriverVersion);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
+  status = gDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
   if (status > 0) {
     rpt->reportString(datablock);
@@ -57,7 +57,7 @@ void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::UnitNamePrefix);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
+  status = gDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
   if (status > 0) {
     rpt->reportString(datablock);
@@ -73,7 +73,7 @@ void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   flags = (int)(DAF::NONE);
   reg = (int)(CDR::Intervals);
-  status = globalDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
+  status = gDeviceTable->read(handle, flags, reg, BUF_SIZE, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
 
   tst->assertTrue("Read error.", (status >= 0));
@@ -85,7 +85,7 @@ void TestCommon::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   tst->beforeTest("Close");
 
   flags = (int)(DAF::NONE);
-  status = globalDeviceTable->close(handle, flags);
+  status = gDeviceTable->close(handle, flags);
   rpt->reportClose(status, handle, flags);
 
   tst->assertTrue("Close error.", (status >= 0));

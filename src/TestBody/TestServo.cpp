@@ -29,7 +29,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock, unitID, BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   if (status >= 0) {
     rpt->reportString(datablock);
@@ -47,16 +47,16 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = 0;
   reg = (int)(DDServo::REG::PIN);
   count = 2;
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
   tst->assertEquals("Pin read.", ENODATA, status);
 
   fromHostTo16LE((int)3, datablock);
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
   tst->assertEquals("Pin write:", 2, status);
 
-  status = globalDeviceTable->read(handle, flags, reg, count, datablock);
+  status = gDeviceTable->read(handle, flags, reg, count, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
   tst->assertEquals("Pin read:", 2, status);
 
@@ -71,17 +71,17 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   tst->beforeTest("ReadRegisters");
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::POSITION_DEGREES), 2, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::POSITION_DEGREES), 2, datablock);
   tst->assertEquals("Pos_D read:", 2, status);
   int pos = from16LEToHost(datablock + 0);
   log->info("Position D: {}", pos);
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::POSITION_MICROSECONDS), 2, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::POSITION_MICROSECONDS), 2, datablock);
   tst->assertEquals("Pos_M read:", 2, status);
   pos = from16LEToHost(datablock + 0);
   log->info("Position M: {}", pos);
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::RANGE_MICROSECONDS), 4, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::RANGE_MICROSECONDS), 4, datablock);
   tst->assertEquals("Range read:", 4, status);
   int lo = from16LEToHost(datablock + 0);
   int hi = from16LEToHost(datablock + 2);
@@ -93,7 +93,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   tst->beforeTest("ReadPulseRange");
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::RANGE_MICROSECONDS), 4, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::RANGE_MICROSECONDS), 4, datablock);
   if (status >= 0) {
     int lo = ((datablock[1]) << 8) | (datablock[0] << 0);
     int hi = ((datablock[3]) << 8) | (datablock[2] << 0);
@@ -109,7 +109,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   tst->beforeTest("Sweep");
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
   tst->assertEquals("Pin read:", 2, status);
 
   pin = ((datablock[1] & 0xFF) << 8) | (datablock[0] & 0xFF);
@@ -120,7 +120,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = 0;
   reg = (int)(DDServo::REG::POSITION_DEGREES);
   count = 2;
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
   tst->assertEquals("Position write:", 2, status);
 
@@ -131,7 +131,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   flags = 0;
   reg = (int)(DDServo::REG::POSITION_DEGREES);
   count = 2;
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
   tst->assertEquals("Position write:", 2, status);
 
@@ -145,7 +145,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   datablock[0] = 90;
   datablock[1] = 0;
-  status = globalDeviceTable->write(handle, 0, (int)(DDServo::REG::POSITION_DEGREES), 2, datablock);
+  status = gDeviceTable->write(handle, 0, (int)(DDServo::REG::POSITION_DEGREES), 2, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
 
   delay(1000);
@@ -158,7 +158,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
 
   tst->beforeTest("Close");
   flags = (int)(DAF::NONE);
-  status = globalDeviceTable->close(handle, flags);
+  status = gDeviceTable->close(handle, flags);
   rpt->reportClose(status, handle, flags);
   tst->assertTrue("Close.", (status >= 0));
   tst->afterTest();
@@ -175,7 +175,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   openOpts = 0;
   strlcpy((char *)datablock,unitID,BUF_SIZE);
 
-  status = globalDeviceTable->open(openOpts, flags, (const char *)datablock);
+  status = gDeviceTable->open(openOpts, flags, (const char *)datablock);
   rpt->reportOpen(status, openOpts, flags, datablock);
   tst->assertTrue("Open.", (status >= 0));
 
@@ -188,18 +188,18 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   fromHostTo32LE(0UL,datablock);
   fromHostTo32LE(500UL,datablock+4);
   count = 8;
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
   tst->assertEquals("Position write:", 8, status);
 
   // Write pin
 
   fromHostTo16LE(3, datablock);
-  status = globalDeviceTable->write(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
+  status = gDeviceTable->write(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
   tst->assertEquals("Pin write:", 2, status);
 
-  status = globalDeviceTable->read(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
+  status = gDeviceTable->read(handle, 0, (int)(DDServo::REG::PIN), 2, datablock);
   rpt->reportRead(status, handle, flags, reg, count, datablock);
   tst->assertEquals("Pin read:", 2, status);
 
@@ -216,7 +216,7 @@ void TestServo::doTest(TestManager *tst, ClientReporter *rpt, Logger *log) {
   reg = (int)(DDServo::REG::POSITION_MICROSECONDS);
   count = 2;
   fromHostTo16LE((int)(1500),datablock);
-  status = globalDeviceTable->write(handle, flags, reg, count, datablock);
+  status = gDeviceTable->write(handle, flags, reg, count, datablock);
   rpt->reportWrite(status, handle, flags, reg, count);
 
   tst->afterTest();

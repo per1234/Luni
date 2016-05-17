@@ -13,8 +13,8 @@
 #include "DeviceError.h"
 #include "DeviceDefine.h"
 
-// #include "ClientReporter.h"
 class ClientReporter;
+class DeviceTable;
 
 class DeviceDriver {
 

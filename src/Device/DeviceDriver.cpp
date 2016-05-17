@@ -2,6 +2,10 @@
 
 //---------------------------------------------------------------------------
 
+extern DeviceTable *gDeviceTable;
+
+//---------------------------------------------------------------------------
+
 DeviceDriver::DeviceDriver(const char *pre, const int count) :
   unitNamePrefix((char *)pre),
   logicalUnitCount(count),
@@ -231,4 +235,3 @@ int DeviceDriver::milliRateStop(int action, int handle, int flags, int reg, int 
 
 int DeviceDriver::microRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {}
 int DeviceDriver::microRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {}
-

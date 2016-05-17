@@ -3,7 +3,7 @@
 
 //---------------------------------------------------------------------------
 
-extern DeviceTable *globalDeviceTable;
+extern DeviceTable *gDeviceTable;
 
 /**
  * This device driver is for the Microchip Technology MCP9808 Digital
@@ -194,7 +194,7 @@ int DDMCP9808::processTimerEvent(int lun, int timerSelector, ClientReporter *rep
   if (timerSelector == 1) {
     if (cU->eventAction[1].enabled) {
       if ((cU->eventAction[1].action & 0xF) == (int)(DAC::READ))  {
-        int status = globalDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
+        int status = gDeviceTable->read(h,f,r,c,cU->eventAction[1].responseBuffer);
         report->reportRead(status, h, f, r, c, (const byte *)(cU->eventAction[1].responseBuffer));
         return status;
       }
