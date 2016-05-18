@@ -163,10 +163,7 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
     thePin = from16LEToHost(buf);
     if (!(IS_PIN_PWM(thePin))) return EINVAL;
 
-    if (currentUnit->attached()) {
-      currentUnit->detach();
-    }
-
+    if (currentUnit->attached()) return EBUSY;
     isNewLock = currentUnit->lockPin(thePin);
     if (!isNewLock) return EBUSY;
 
@@ -234,7 +231,10 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
 int DDServo::close(int handle, int flags) {
   int lun = getUnitNumber(handle);
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
-  currentUnit->detach();
+  if (currentUnit->attached()) {
+    currentUnit->detach();
+    currentUnit->unlockPin(currentUnit->pin);
+  }
   logicalUnits[lun] = 0;
   return DeviceDriver::close(handle, flags);
 }

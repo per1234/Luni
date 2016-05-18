@@ -54,13 +54,13 @@ void ConsoleReporter::reportError(int status) {
   sendDeviceResponse((int)(DAC::CLOSE), status);
 }
 
-void ConsoleReporter::reportPinClaim(int pin) {
-  Serial.print("Claim pin ");
+void ConsoleReporter::reportClaimPin(int pin) {
+  Serial.print("Event: Claim pin ");
   Serial.println(pin);
 }
 
-void ConsoleReporter::reportPinRelease(int pin) {
-  Serial.print("Release pin ");
+void ConsoleReporter::reportReleasePin(int pin) {
+  Serial.print("Event: Release pin ");
   Serial.println(pin);
 }
 

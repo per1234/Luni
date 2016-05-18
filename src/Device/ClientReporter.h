@@ -23,8 +23,8 @@ public:
     virtual void reportClose(int status, int handle, int flags ) = 0;
     virtual void reportString(const byte *dataBytes) = 0;
     virtual void reportError(int status) = 0;
-    virtual void reportPinClaim(int pin) = 0;
-    virtual void reportPinRelease(int pin) = 0;
+    virtual void reportClaimPin(int pin) = 0;
+    virtual void reportReleasePin(int pin) = 0;
 };
 
 #endif

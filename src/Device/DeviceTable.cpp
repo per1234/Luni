@@ -110,7 +110,7 @@ bool DeviceTable::claimPin(int pin) {
   int bitOffset = (int)(pin % 8);
   bool result = (bitRead(pinLocks[byteOffset],bitOffset) == 0);
   bitSet(pinLocks[byteOffset],bitOffset);
-  cr->reportPinClaim(pin);
+  cr->reportClaimPin(pin);
   return result;
 }
 
@@ -122,6 +122,6 @@ bool DeviceTable::releasePin(int pin) {
   int bitOffset = (int)(pin % 8);
   bool result = (bitRead(pinLocks[byteOffset],bitOffset) == 1);
   bitClear(pinLocks[byteOffset],bitOffset);
-  cr->reportPinRelease(pin);
+  cr->reportReleasePin(pin);
   return result;
 }

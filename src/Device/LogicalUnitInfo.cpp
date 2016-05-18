@@ -24,22 +24,14 @@ extern DeviceTable *gDeviceTable;
 // return false if pin was already in use by someone else
 
 bool LogicalUnitInfo::lockPin(int pin) {
-  if (!gDeviceTable->claimPin(pin)) {
-    return false;
-  }
-//  add to our active pin list
-  return true;
+  return (gDeviceTable->claimPin(pin));
 }
 
 // return true if pin was ours, now it's not
 // return false if pin was not in use by anyone!
 
 bool LogicalUnitInfo::unlockPin(int pin) {
-  if (!gDeviceTable->releasePin(pin)) {
-    return false;
-  }
-//  remove from our active pin list
-  return true;
+  return (gDeviceTable->releasePin(pin));
 }
 
 LogicalUnitInfo NULL_LUI;
