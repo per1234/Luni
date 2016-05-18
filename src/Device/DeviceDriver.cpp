@@ -210,28 +210,49 @@ unsigned long DeviceDriver::calculateElapsedTime(LogicalUnitInfo *lui, int timer
 
 //---------------------------------------------------------------------------
 
-int DeviceDriver::milliRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {
-  int lun = getUnitNumber(handle);
-  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
-  LogicalUnitInfo *currentUnit = logicalUnits[lun];
-  if (currentUnit == 0) return ENOTCONN;
+int DeviceDriver::microRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {
+  return timerRateRun(0, action, handle, flags, reg, count, buf);
+}
 
-  currentUnit->eventAction[1].action = action;
-  currentUnit->eventAction[1].handle = handle;
-  currentUnit->eventAction[1].flags = flags;
-  currentUnit->eventAction[1].reg = reg;
-  currentUnit->eventAction[1].count = count;
-  currentUnit->eventAction[1].enabled = true;
+int DeviceDriver::milliRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {
+  return timerRateRun(1, action, handle, flags, reg, count, buf);
+}
+
+int DeviceDriver::microRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {
+  return timerRateStop(0, action, handle, flags, reg, count, buf);
 }
 
 int DeviceDriver::milliRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {
+  return timerRateStop(1, action, handle, flags, reg, count, buf);
+}
+
+int DeviceDriver::timerRateRun(int timerSelector,int action, int handle, int flags, int reg, int count, byte *buf) {
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LogicalUnitInfo *currentUnit = logicalUnits[lun];
   if (currentUnit == 0) return ENOTCONN;
 
-  currentUnit->eventAction[1].enabled = false;
+  if (timerSelector != 0 && timerSelector != 1) return EINVAL;
+  if (flags != (int)(DAF::MILLI_RUN) && flags != (int)(DAF::MICRO_RUN)) return EINVAL;
+
+  currentUnit->eventAction[timerSelector].action = action;
+  currentUnit->eventAction[timerSelector].handle = handle;
+  currentUnit->eventAction[timerSelector].flags = flags;
+  currentUnit->eventAction[timerSelector].reg = reg;
+  currentUnit->eventAction[timerSelector].count = count;
+  currentUnit->eventAction[timerSelector].enabled = true;
+  return ESUCCESS;
 }
 
-int DeviceDriver::microRateRun(int action, int handle, int flags, int reg, int count, byte *buf) {}
-int DeviceDriver::microRateStop(int action, int handle, int flags, int reg, int count, byte *buf) {}
+int DeviceDriver::timerRateStop(int timerSelector, int action, int handle, int flags, int reg, int count, byte *buf) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LogicalUnitInfo *currentUnit = logicalUnits[lun];
+  if (currentUnit == 0) return ENOTCONN;
+
+  if (timerSelector != 0 && timerSelector != 1) return EINVAL;
+  if (flags != (int)(DAF::MILLI_STOP) && flags != (int)(DAF::MICRO_STOP)) return EINVAL;
+
+  currentUnit->eventAction[timerSelector].enabled = false;
+  return ESUCCESS;
+}

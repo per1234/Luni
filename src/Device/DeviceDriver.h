@@ -55,6 +55,8 @@ protected:
 private:
 
     unsigned long calculateElapsedTime(LogicalUnitInfo *lui, int timerIndex);
+    int timerRateRun(int timerSelector,int action, int handle, int flags, int reg, int count, byte *buf);
+    int timerRateStop(int timerSelector, int action, int handle, int flags, int reg, int count, byte *buf);
 
 };
 
