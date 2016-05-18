@@ -31,6 +31,12 @@ public:
   unsigned long currentTime[2];     // the current values from micros() and millis()
   unsigned long deltaTime[2];       // amount of time since last interval expired
   RateAction eventAction[2];        // action to take when timer expires
+
+protected:
+
+    bool lockPin(int p);
+    bool unlockPin(int p);
+
 };
 
 #endif

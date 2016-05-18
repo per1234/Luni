@@ -137,6 +137,8 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
   int loPulse;
   int hiPulse;
   int pos;
+  int status;
+  bool isNewLock;
 
   // First, handle registers that can be written even before a connection
   // has been made.
@@ -164,8 +166,15 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
     if (currentUnit->attached()) {
       currentUnit->detach();
     }
+
+    isNewLock = currentUnit->lockPin(thePin);
+    if (!isNewLock) return EBUSY;
+
     channel = currentUnit->attach(thePin, currentUnit->minPulse, currentUnit->maxPulse);
-    if (channel == 255) return EMFILE;
+    if (channel == 255) {
+      currentUnit->unlockPin(thePin);
+      return EMFILE;
+    }
     currentUnit->pin = thePin;
     return 2;
 

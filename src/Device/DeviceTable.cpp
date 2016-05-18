@@ -1,6 +1,7 @@
 #include "DeviceTable.h"
 #include "ClientReporter.h"
 
+
 /**
  * This DeviceTable class provides single point access to all the loaded
  * DeviceDriver objects.  The open() method is used to identify the driver of
@@ -96,5 +97,31 @@ int DeviceTable::dispatchTimers() {
     int status = devices[deviceIndex]->checkForTimerEvents(cr);
     result = (status < 0) ? status : result;
   }
+  return result;
+}
+
+//----------------------------------------------------------------------------
+
+// return true if bit was clear and is now set (it was idle, now it's ours)
+// return false if bit was set and remains so (pin was already in use by another)
+
+bool DeviceTable::claimPin(int pin) {
+  int byteOffset = (int)(pin / 8);
+  int bitOffset = (int)(pin % 8);
+  bool result = (bitRead(pinLocks[byteOffset],bitOffset) == 0);
+  bitSet(pinLocks[byteOffset],bitOffset);
+  cr->reportPinClaim(pin);
+  return result;
+}
+
+// return true if bit was set and is now clear (pin was ours, now it's not)
+// return false if bit was clear and remains so (pin was not in use by anyone!)
+
+bool DeviceTable::releasePin(int pin) {
+  int byteOffset = (int)(pin / 8);
+  int bitOffset = (int)(pin % 8);
+  bool result = (bitRead(pinLocks[byteOffset],bitOffset) == 1);
+  bitClear(pinLocks[byteOffset],bitOffset);
+  cr->reportPinRelease(pin);
   return result;
 }

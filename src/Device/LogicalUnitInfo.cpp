@@ -1,5 +1,8 @@
 #include "LogicalUnitInfo.h"
 #include "DeviceDriver.h"
+#include "DeviceTable.h"
+
+extern DeviceTable *gDeviceTable;
 
   LogicalUnitInfo::LogicalUnitInfo() {
 
@@ -15,6 +18,30 @@
 
   LogicalUnitInfo::~LogicalUnitInfo() {}
 
+//----------------------------------------------------------------------------
+
+// return true if pin was idle, now it's ours
+// return false if pin was already in use by someone else
+
+bool LogicalUnitInfo::lockPin(int pin) {
+  if (!gDeviceTable->claimPin(pin)) {
+    return false;
+  }
+//  add to our active pin list
+  return true;
+}
+
+// return true if pin was ours, now it's not
+// return false if pin was not in use by anyone!
+
+bool LogicalUnitInfo::unlockPin(int pin) {
+  if (!gDeviceTable->releasePin(pin)) {
+    return false;
+  }
+//  remove from our active pin list
+  return true;
+}
+
 LogicalUnitInfo NULL_LUI;
-LogicalUnitInfo * const OPEN_BUT_NOT_CONFIGURED = &NULL_LUI;
+const LogicalUnitInfo *OPEN_BUT_NOT_CONFIGURED = &NULL_LUI;
 

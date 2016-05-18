@@ -23,12 +23,17 @@ public:
     int dispatchTimers();
     void reset();
 
+    bool claimPin(int p);
+    bool releasePin(int p);
+
 private:
+
+    uint8_t pinLocks[(TOTAL_PINS+7)/8] {0};
 
     int deviceCount;
     DeviceDriver **devices;
 
-    ClientReporter *cr;             // for use by DDMeta
+    ClientReporter *cr;             // for communication to the client
 
 };
 
