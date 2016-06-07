@@ -2,7 +2,6 @@
 #define DDServo_h
 
 #include <Device/DeviceDriver.h>
-#include <Device/DeviceDriver.h>
 #include <Device/DeviceTable.h>
 #include "LUServo.h"
 
