@@ -19,7 +19,7 @@ DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
   baseAddress(baseI2CAddress),
   i2c() {
-  DEFINE_VERSION_PRE(0, 8, 0, beta)
+  DEFINE_VERSION_PRE(0, 9, 0, beta)
 }
 
 //---------------------------------------------------------------------------

@@ -9,7 +9,7 @@ extern DeviceTable *gDeviceTable;
  * HelloWorld component for device drivers and their usage.
  */
 DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
-  DEFINE_VERSION_PRE(0, 8, 0, beta)
+  DEFINE_VERSION_PRE(0, 9, 0, beta)
 }
 
 //---------------------------------------------------------------------------
