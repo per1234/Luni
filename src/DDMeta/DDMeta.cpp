@@ -17,7 +17,7 @@ extern DeviceTable *gDeviceTable;
  */
 DDMeta::DDMeta(const char *dName, int count) :
   DeviceDriver(dName, count) {
-  DEFINE_VERSION_PRE(0, 8, 0, beta)
+  DEFINE_VERSION_PRE(0, 9, 0, beta)
 }
 
 //---------------------------------------------------------------------------
