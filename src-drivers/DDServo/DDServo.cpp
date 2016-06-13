@@ -25,7 +25,7 @@ extern DeviceTable *gDeviceTable;
  */
 DDServo::DDServo(const char *dName, int lunCount) :
   DeviceDriver(dName, lunCount) {
-  DEFINE_VERSION_PRE(0, 8, 0, beta)
+  DEFINE_VERSION_PRE(0, 9, 0, beta)
 
   servos = 0;
   if ((logicalUnitCount > 0) && (logicalUnitCount <= MAX_SERVOS)) {
