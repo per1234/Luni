@@ -131,6 +131,10 @@ int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDHello::close(int handle, int flags) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
   return DeviceDriver::close(handle, flags);
 }
 

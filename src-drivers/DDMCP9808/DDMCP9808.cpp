@@ -177,6 +177,10 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DDMCP9808::close(int handle, int flags) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
   return DeviceDriver::close(handle, flags);
 }
 

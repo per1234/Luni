@@ -230,7 +230,10 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
 
 int DDServo::close(int handle, int flags) {
   int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+
   if (currentUnit->attached()) {
     currentUnit->detach();
     currentUnit->unlockPin(currentUnit->pin);
