@@ -9,7 +9,7 @@ extern DeviceTable *gDeviceTable;
  * HelloWorld component for device drivers and their usage.
  */
 DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 10, 0)
 }
 
 //---------------------------------------------------------------------------
@@ -23,6 +23,9 @@ int DDHello::open(int opts, int flags, const char *name) {
 
   lun = status;
   LUHello *currentUnit = new LUHello("World");
+  if (currentUnit == 0) {
+    return ENOMEM;
+  }
 
   // Any further validation of the current unit's appropriateness goes here ...
 

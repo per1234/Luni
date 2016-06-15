@@ -17,7 +17,7 @@ extern DeviceTable *gDeviceTable;
  */
 DDMeta::DDMeta(const char *dName, int count) :
   DeviceDriver(dName, count) {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 10, 0)
 }
 
 //---------------------------------------------------------------------------
@@ -29,6 +29,9 @@ int DDMeta::open(int opts, int flags, const char *name) {
 
   lun = status;
   LUMeta *currentUnit = new LUMeta();
+  if (currentUnit == 0) {
+    return ENOMEM;
+  }
 
   logicalUnits[lun] = currentUnit;
   return lun;

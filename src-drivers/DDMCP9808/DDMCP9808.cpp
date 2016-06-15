@@ -19,7 +19,7 @@ DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
   baseAddress(baseI2CAddress),
   i2c() {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 10, 0)
 }
 
 //---------------------------------------------------------------------------
@@ -33,6 +33,9 @@ int DDMCP9808::open(int opts, int flags, const char *name) {
 
   lun = status;
   LUMCP9808 *currentUnit = new LUMCP9808(baseAddress + lun);
+  if (currentUnit == 0) {
+    return ENOMEM;
+  }
 
   int address = currentUnit->i2cAddress;
   int theRegister = (int)(REG::MANUF_ID);
