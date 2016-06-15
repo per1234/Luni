@@ -128,6 +128,10 @@ int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDMeta::close(int handle, int flags) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMeta *currentUnit = static_cast<LUMeta *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
   return DeviceDriver::close(handle, flags);
 }
 

@@ -140,7 +140,7 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
       currentUnit->channel[c].op = from8LEToHost(buf+bufIndex++);
       currentUnit->channel[c].config = from8LEToHost(buf+bufIndex++);
       currentUnit->channel[c].pin = from8LEToHost(buf+bufIndex++);
-      isNewLock = currentUnit->lockPin(thePin);
+      isNewLock = currentUnit->lockPin(currentUnit->channel[c].pin);
       if (!isNewLock) return EBUSY;
     }
 
@@ -189,23 +189,45 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
   // }
 
   switch (reg) {
+  case (int)(REG::CHANNEL_VALUES):
+    bufIndex = 0;
+
+    if (currentUnit->direction != OUTPUT) {
+      return ENOTSUP;
+    }
+    if (count < 2*currentUnit->channelCount) return EMSGSIZE;
+    numChannels = from8LEToHost(buf + bufIndex++);
+    if (numChannels != currentUnit->channelCount) return EMSGSIZE;
+
+    for (int c=0; c < currentUnit->channelCount; c++) {
+      if (currentUnit->channel[c].op = OP_DIGITAL) {
+        digitalWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+      } else {
+        analogWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+      }
+      bufIndex += 2;
+    }
+    return bufIndex;
+
   default:
     return ENOTSUP;
   }
   return EPANIC;
 }
 
-<<<<<<<<<<<<<------------->>>>>>>>>>>>>
 //---------------------------------------------------------------------------
 
 int DDSignal::close(int handle, int flags) {
   int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[lun]);
-  if (currentUnit->attached()) {
-    currentUnit->detach();
-    currentUnit->unlockPin(currentUnit->pin);
+  if (currentUnit == 0) return ENOTCONN;
+
+  if (currentUnit->channelCount > 0) {
+    for (int c=0; c < channelCount; c++) {
+      currentUnit->unlockPin(currentUnit->channel[c].pin);
+    }
   }
-  logicalUnits[lun] = 0;
   return DeviceDriver::close(handle, flags);
 }
 
