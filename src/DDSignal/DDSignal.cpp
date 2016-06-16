@@ -87,7 +87,7 @@ int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
     bufIndex = 0;
     fromHostTo8LE(currentUnit->channelCount,buf + bufIndex++);
     for (int c=0; c < currentUnit->channelCount; c++) {
-      if (currentUnit->channel[c].op = OP_DIGITAL) {
+      if (currentUnit->channel[c].op == OP_DIGITAL) {
         fromHostTo16LE(digitalRead(currentUnit->channel[c].pin),buf + bufIndex);
       } else {
         fromHostTo16LE(analogRead(currentUnit->channel[c].pin),buf + bufIndex);
@@ -224,7 +224,7 @@ int DDSignal::close(int handle, int flags) {
   if (currentUnit == 0) return ENOTCONN;
 
   if (currentUnit->channelCount > 0) {
-    for (int c=0; c < channelCount; c++) {
+    for (int c=0; c < currentUnit->channelCount; c++) {
       currentUnit->unlockPin(currentUnit->channel[c].pin);
     }
   }
@@ -241,41 +241,41 @@ int DDSignal::close(int handle, int flags) {
 // would be easy to implement for servos and other devices.
 
 int DDSignal::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
-  int nextStep;
-  int nextPulse;
-  int status;
+  // int nextStep;
+  // int nextPulse;
+  // int status;
 
-  LUSignal *cU = static_cast<LUSignal *>(logicalUnits[getUnitNumber(lun)]);
-  if (cU == 0) return ENOTCONN;
+  // LUSignal *cU = static_cast<LUSignal *>(logicalUnits[getUnitNumber(lun)]);
+  // if (cU == 0) return ENOTCONN;
 
-  int h = cU->eventAction[1].handle;
-  int f = cU->eventAction[1].flags;
-  int r = cU->eventAction[1].reg;
-  int c = min(cU->eventAction[1].count,QUERY_BUFFER_SIZE);
+  // int h = cU->eventAction[1].handle;
+  // int f = cU->eventAction[1].flags;
+  // int r = cU->eventAction[1].reg;
+  // int c = min(cU->eventAction[1].count,QUERY_BUFFER_SIZE);
 
-  // Is it time to do another write?
-  // If so, calculate new position and set it.
+  // // Is it time to do another write?
+  // // If so, calculate new position and set it.
 
-  if ((timerSelector == 1) && (cU->eventAction[1].enabled)) {
-    if ((cU->eventAction[1].action) == (int)(DAC::WRITE))  {
-      switch (cU->eventAction[1].reg) {
-      case (int)(REG::POSITION_MICROSECONDS):
-        nextStep = cU->currentStep + cU->stepIncrement;
-        if ((nextStep < 0) || (nextStep == cU->stepCount)) {
-          cU->stepIncrement = -cU->stepIncrement;
-          nextStep = cU->currentStep + cU->stepIncrement;
-        }
-        cU->currentStep = nextStep;
-        nextPulse = cU->minPulse + (nextStep * cU->pulseIncrement);
-        fromHostTo16LE(nextPulse,cU->eventAction[1].queryBuffer);
-        f = 0;
-        c = 2;
-        r = (int)(REG::POSITION_MICROSECONDS);
-        status = gDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
-        report->reportWrite(status, h, f, r, c);
-        return status;
-      }
-    }
-  }
+  // if ((timerSelector == 1) && (cU->eventAction[1].enabled)) {
+  //   if ((cU->eventAction[1].action) == (int)(DAC::WRITE))  {
+  //     switch (cU->eventAction[1].reg) {
+  //     case (int)(REG::POSITION_MICROSECONDS):
+  //       nextStep = cU->currentStep + cU->stepIncrement;
+  //       if ((nextStep < 0) || (nextStep == cU->stepCount)) {
+  //         cU->stepIncrement = -cU->stepIncrement;
+  //         nextStep = cU->currentStep + cU->stepIncrement;
+  //       }
+  //       cU->currentStep = nextStep;
+  //       nextPulse = cU->minPulse + (nextStep * cU->pulseIncrement);
+  //       fromHostTo16LE(nextPulse,cU->eventAction[1].queryBuffer);
+  //       f = 0;
+  //       c = 2;
+  //       r = (int)(REG::POSITION_MICROSECONDS);
+  //       status = gDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
+  //       report->reportWrite(status, h, f, r, c);
+  //       return status;
+  //     }
+  //   }
+  // }
   return ESUCCESS;
 }

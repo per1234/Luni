@@ -10,7 +10,7 @@ public:
   byte op;        // digital, analog
   byte config;
   byte pin;
-}
+};
 
 class LUSignal: public LogicalUnitInfo {
 
