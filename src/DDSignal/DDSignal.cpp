@@ -40,45 +40,35 @@ int DDSignal::open(int opts, int flags, const char *name) {
 //---------------------------------------------------------------------------
 
 int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
-
   int bufIndex;
 
-   // First, handle registers that can be read even before a connection
-   // has been made. Note that currently the only source of handle-less
-   // operations is the Meta device driver.  All other clients must do
-   // an open() (ie, get a handle) before doing any reads or writes.
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
 
-  switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
-
-  //  Second, registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to have any defined channels
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
-  if (count < 0) return EINVAL;
+  // Enable continuous read, if requested
 
-  switch (reg) {
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+  if (flags == (int)DAF::MILLI_RUN) {
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count,buf);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count,buf);
   }
 
-  //  Third, registers for which we must have a handle (ie, open() has
-  //  been done) AND we need to have at least one channel defined
-
-  if (currentUnit->channelCount == 0) return ENODATA;
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUSignal object associated with the lun.
 
   switch (reg) {
   case (int)(REG::CHANNEL_VALUES):
+    if (currentUnit->channelCount == 0) return ENODATA;
     if (currentUnit->direction != INPUT) {
       return ENOTSUP;
     }
@@ -95,11 +85,8 @@ int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
       bufIndex += 2;
     }
     return bufIndex;
-
-  default:
-    return ENOTSUP;
   }
-  return EPANIC;
+  return ENOTSUP;
 }
 
 //---------------------------------------------------------------------------
@@ -109,23 +96,31 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
   int bufIndex;
   bool isNewLock;
 
-  // First, handle registers that can be written even before a connection
-  // has been made.
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
 
-  // ... No applicable registers ...
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
 
-  //  Second, handle registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to have any defined channels
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUSignal object associated with the lun.
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
-  switch (reg) {
+  // Enable continuous write, if requested
 
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
+  if (flags == (int)DAF::MILLI_RUN) {
+    DeviceDriver::milliRateRun((int)DAC::WRITE, handle, flags, reg, count,buf);
+  } else if (flags == (int)DAF::MILLI_STOP) {
+    DeviceDriver::milliRateStop((int)DAC::WRITE, handle, flags, reg, count,buf);
+  }
+
+  switch (reg) {
 
   case (int)(CDR::Configure):
     if (count < 5) return EMSGSIZE;
@@ -164,55 +159,36 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
           case OP_ANALOG:
             pinMode(currentUnit->channel[c].pin,OUTPUT);
             break;
+          }
         }
-      }
-    } else {
-      return EINVAL;  // direction has to be INPUT or OUTPUT
-    }
-    currentUnit->channelCount = numChannels;
-    return bufIndex;
-  }
-
-  //  Third, registers for which we must have a handle (ie, open() has
-  //  been done) AND we need to have at least one channel defined
-
-  if (currentUnit->channelCount == 0) return ENODATA;
-
-  // Enable continuous write, if requested
-
-  // if (flags == (int)DAF::MILLI_RUN) {
-  //   currentUnit->pulseIncrement = (currentUnit->maxPulse-currentUnit->minPulse) / currentUnit->stepCount;
-  //   currentUnit->currentStep = 0;
-  //   DeviceDriver::milliRateRun((int)DAC::WRITE, handle, flags, reg, count,buf);
-  // } else if (flags == (int)DAF::MILLI_STOP) {
-  //   DeviceDriver::milliRateStop((int)DAC::WRITE, handle, flags, reg, count,buf);
-  // }
-
-  switch (reg) {
-  case (int)(REG::CHANNEL_VALUES):
-    bufIndex = 0;
-
-    if (currentUnit->direction != OUTPUT) {
-      return ENOTSUP;
-    }
-    if (count < 2*currentUnit->channelCount) return EMSGSIZE;
-    numChannels = from8LEToHost(buf + bufIndex++);
-    if (numChannels != currentUnit->channelCount) return EMSGSIZE;
-
-    for (int c=0; c < currentUnit->channelCount; c++) {
-      if (currentUnit->channel[c].op = OP_DIGITAL) {
-        digitalWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
       } else {
-        analogWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+        return EINVAL;  // direction has to be INPUT or OUTPUT
       }
-      bufIndex += 2;
-    }
-    return bufIndex;
+      currentUnit->channelCount = numChannels;
+      return bufIndex;
 
-  default:
-    return ENOTSUP;
+    case (int)(REG::CHANNEL_VALUES):
+      bufIndex = 0;
+      if (currentUnit->channelCount == 0) return ENODATA;
+
+      if (currentUnit->direction != OUTPUT) {
+        return ENOTSUP;
+      }
+      if (count < 2*currentUnit->channelCount) return EMSGSIZE;
+      numChannels = from8LEToHost(buf + bufIndex++);
+      if (numChannels != currentUnit->channelCount) return EMSGSIZE;
+
+      for (int c=0; c < currentUnit->channelCount; c++) {
+        if (currentUnit->channel[c].op = OP_DIGITAL) {
+          digitalWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+        } else {
+          analogWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+        }
+        bufIndex += 2;
+      }
+      return bufIndex;
   }
-  return EPANIC;
+  return ENOTSUP;
 }
 
 //---------------------------------------------------------------------------
@@ -233,49 +209,27 @@ int DDSignal::close(int handle, int flags) {
 
 //---------------------------------------------------------------------------
 
-// If a continuous write has been requested, process it.
-
-// One use of continuous write for this device is to have the servo follow a
-// position profile.  The default, and currently the only, profile is a simple
-// sweep between limits, but function tables or other interesting algorithms
-// would be easy to implement for servos and other devices.
+// If a continuous read has been requested, process it.
 
 int DDSignal::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
-  // int nextStep;
-  // int nextPulse;
-  // int status;
+  int status;
 
-  // LUSignal *cU = static_cast<LUSignal *>(logicalUnits[getUnitNumber(lun)]);
-  // if (cU == 0) return ENOTCONN;
+  LUSignal *currentUnit = static_cast<LUSignal *>(logicalUnits[getUnitNumber(lun)]);
+  if (currentUnit == 0) return ENOTCONN;
 
-  // int h = cU->eventAction[1].handle;
-  // int f = cU->eventAction[1].flags;
-  // int r = cU->eventAction[1].reg;
-  // int c = min(cU->eventAction[1].count,QUERY_BUFFER_SIZE);
+  int h = currentUnit->eventAction[1].handle;
+  int f = currentUnit->eventAction[1].flags;
+  int r = currentUnit->eventAction[1].reg;
+  int c = min(currentUnit->eventAction[1].count,RESPONSE_BUFFER_SIZE);
 
-  // // Is it time to do another write?
-  // // If so, calculate new position and set it.
+  // Is it time to do another read?
 
-  // if ((timerSelector == 1) && (cU->eventAction[1].enabled)) {
-  //   if ((cU->eventAction[1].action) == (int)(DAC::WRITE))  {
-  //     switch (cU->eventAction[1].reg) {
-  //     case (int)(REG::POSITION_MICROSECONDS):
-  //       nextStep = cU->currentStep + cU->stepIncrement;
-  //       if ((nextStep < 0) || (nextStep == cU->stepCount)) {
-  //         cU->stepIncrement = -cU->stepIncrement;
-  //         nextStep = cU->currentStep + cU->stepIncrement;
-  //       }
-  //       cU->currentStep = nextStep;
-  //       nextPulse = cU->minPulse + (nextStep * cU->pulseIncrement);
-  //       fromHostTo16LE(nextPulse,cU->eventAction[1].queryBuffer);
-  //       f = 0;
-  //       c = 2;
-  //       r = (int)(REG::POSITION_MICROSECONDS);
-  //       status = gDeviceTable->write(h, f, r, c, cU->eventAction[1].queryBuffer);
-  //       report->reportWrite(status, h, f, r, c);
-  //       return status;
-  //     }
-  //   }
-  // }
+  if ((timerSelector == 1) && (currentUnit->eventAction[1].enabled)) {
+    if ((currentUnit->eventAction[1].action && 0xF) == (int)(DAC::READ))  {
+        status = gDeviceTable->read(h, f, r, c, currentUnit->eventAction[1].responseBuffer);
+        report->reportRead(status, h, f, r, c,  currentUnit->eventAction[1].responseBuffer);
+        return status;
+    }
+  }
   return ESUCCESS;
 }
