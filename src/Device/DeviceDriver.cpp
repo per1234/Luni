@@ -21,7 +21,19 @@ DeviceDriver::DeviceDriver(const char *pre, const int count) :
 };
 
 //---------------------------------------------------------------------------
-
+/**
+ * This DeviceDriver base class implementation of open() performs the initial
+ * tasks of opening a logical unit, namely finding out if the call is targeting
+ * a device that this instance is responsible for, and if it is, then checking
+ * the associated lun and making sure that it is free.  The result of the work
+ * by this base class open() is then returned for further processing or error
+ * reporting to the calling subclass open() method.
+ *
+ * @param  opts  [description]
+ * @param  flags [description]
+ * @param  name  [description]
+ * @return       [description]
+ */
 int DeviceDriver::open(int opts, int flags, const char *name) {
   int lun;
 
@@ -49,11 +61,119 @@ int DeviceDriver::open(int opts, int flags, const char *name) {
   return ENXIO;
 }
 
+//---------------------------------------------------------------------------
+/**
+ * This DeviceDriver base class implementation of read() is called by the
+ * subclass read() methods to handle the generic responses that all device
+ * drivers implement the same way.  If this method returns ENOTSUP, then the
+ * subclass read() should attempt to process the call itself.  If this method
+ * returns any other value, positive or negative, then the subclass read()
+ * should return that value to its caller with no further processing.
+ *
+ * @param  handle [description]
+ * @param  flags  [description]
+ * @param  reg    [description]
+ * @param  count  [description]
+ * @param  buf    [description]
+ * @return        [description]
+ */
+int DeviceDriver::read(int handle, int flags, int reg, int count, byte *buf) {
+
+   // First, handle registers that can be read even before a connection
+   // has been made. Note that currently the only source of handle-less
+   // operations is the Meta device driver.  It has access to DeviceTable
+   // private values and thus can construct handles itself without having
+   // to actually perform an open().  In this way it can query device drivers
+   // without interfering with the activities of the clients that are following
+   // the rules about open() and close().
+
+  switch (reg) {
+  case (int)(CDR::DriverVersion):
+    return buildVersionResponse(count, buf);
+  case (int)(CDR::UnitNamePrefix):
+      return buildPrefixResponse(count,buf);
+  }
+
+  //  Second, registers for which we must have a handle (ie, open() has
+  //  been done) but we don't need to have any detailed info about the
+  //  unit itself beyond that contained in the LogicalUnitInfo base class.
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LogicalUnitInfo *currentUnit = static_cast<LogicalUnitInfo *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+
+  switch (reg) {
+  case (int)(CDR::Intervals):
+    if (count < 8) return EMSGSIZE;
+    fromHostTo32LE(currentUnit->intervalTime[0], &buf[0]);
+    fromHostTo32LE(currentUnit->intervalTime[1], &buf[4]);
+    return 8;
+  }
+
+  return ENOTSUP;
+}
+
+//---------------------------------------------------------------------------
+/**
+ * This DeviceDriver base class implementation of write() is called by the
+ * subclass write() methods to handle the generic responses that all device
+ * drivers implement the same way.  If this method returns ENOTSUP, then the
+ * subclass write() should attempt to process the call itself.  If this method
+ * returns any other value, positive or negative, then the subclass write()
+ * should return that value to its caller with no further processing.
+ *
+ * @param  handle [description]
+ * @param  flags  [description]
+ * @param  reg    [description]
+ * @param  count  [description]
+ * @param  buf    [description]
+ * @return        [description]
+ */
+int DeviceDriver::write(int handle, int flags, int reg, int count, byte *buf) {
+
+   // First, handle registers that can be written even before a connection
+   // has been made. Note that currently the only source of handle-less
+   // operations is the Meta device driver.  It has access to DeviceTable
+   // private values and thus can construct handles itself without having
+   // to actually perform an open().  In this way it can query device drivers
+   // without interfering with the activities of the clients that are following
+   // the rules about open() and close().
+
+  // switch (reg) {
+  //   ... No applicable registers ...
+  // }
+
+  //  Second, registers for which we must have a handle (ie, open() has
+  //  been done) but we don't need to have any detailed info about the
+  //  unit itself beyond that contained in the LogicalUnitInfo base class.
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LogicalUnitInfo *currentUnit = static_cast<LogicalUnitInfo *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+
+  switch (reg) {
+  case (int)(CDR::Intervals):
+    if (count < 8) return EMSGSIZE;
+    currentUnit->intervalTime[0] = from32LEToHost(&buf[0]);
+    currentUnit->intervalTime[1] = from32LEToHost(&buf[4]);
+    return 8;
+  }
+  return ENOTSUP;
+}
+
+//---------------------------------------------------------------------------
+
 int DeviceDriver::close(int handle, int flags) {
-  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
+
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LogicalUnitInfo *currentUnit = static_cast<LogicalUnitInfo *>(logicalUnits[lun]);
+
   if (currentUnit != 0) {
     delete currentUnit;
-    logicalUnits[getUnitNumber(handle)] = 0;
+    logicalUnits[lun] = 0;
   }
   return ESUCCESS;
 }
@@ -91,38 +211,6 @@ int DeviceDriver::checkForTimerEvents(ClientReporter *r) {
     }
   }
   return result;
-}
-//---------------------------------------------------------------------------
-
-int DeviceDriver::readIntervals(int handle, int flags, int reg, int count, byte *buf) {
-  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
-  if (currentUnit == 0) return ENOTCONN;
-  if (count < 8) return EMSGSIZE;
-
-  fromHostTo32LE(currentUnit->intervalTime[0], &buf[0]);
-  fromHostTo32LE(currentUnit->intervalTime[1], &buf[4]);
-  return 8;
-}
-
-//---------------------------------------------------------------------------
-
-/**
- * [DeviceDriver::writeIntervals description]
- * @param  handle [description]
- * @param  flags  [description]
- * @param  reg    [description]
- * @param  count  [description]
- * @param  buf    [description]
- * @return        [description]
- */
-int DeviceDriver::writeIntervals(int handle, int flags, int reg, int count, byte *buf) {
-  LogicalUnitInfo *currentUnit = logicalUnits[getUnitNumber(handle)];
-  if (currentUnit == 0) return ENOTCONN;
-  if (count < 8) return EMSGSIZE;
-
-  currentUnit->intervalTime[0] = from32LEToHost(&buf[0]);
-  currentUnit->intervalTime[1] = from32LEToHost(&buf[4]);
-  return 8;
 }
 
 //---------------------------------------------------------------------------

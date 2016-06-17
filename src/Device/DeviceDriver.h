@@ -43,8 +43,6 @@ protected:
     int logicalUnitCount;
     LogicalUnitInfo **logicalUnits;
 
-    int writeIntervals(int handle, int flags, int reg, int count, byte *buf);
-    int readIntervals(int handle, int flags, int reg, int count, byte *buf);
     int buildVersionResponse(int count, byte *buf);
     int buildPrefixResponse(int count, byte *buf);
     int milliRateRun(int action, int handle, int flags, int reg, int count, byte *buf = 0);
