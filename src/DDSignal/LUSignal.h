@@ -9,7 +9,7 @@ struct Channel {
 public:
   byte op;        // digital, analog
   byte config;
-  byte pin;
+  byte digitalPin;
 };
 
 class LUSignal: public LogicalUnitInfo {
