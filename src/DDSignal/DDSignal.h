@@ -4,6 +4,7 @@
 #include <Device/DeviceDriver.h>
 #include <Device/DeviceTable.h>
 #include "LUSignal.h"
+#include <utility/Boards.h>
 
 #define OP_ANALOG  0  // pin operating in analog mode
 #define OP_DIGITAL 1  // pin operating in digital mode

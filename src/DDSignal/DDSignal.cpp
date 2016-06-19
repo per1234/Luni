@@ -78,9 +78,11 @@ int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
     fromHostTo8LE(currentUnit->channelCount,buf + bufIndex++);
     for (int c=0; c < currentUnit->channelCount; c++) {
       if (currentUnit->channel[c].op == OP_DIGITAL) {
-        fromHostTo16LE(digitalRead(currentUnit->channel[c].pin),buf + bufIndex);
+        if (!IS_PIN_DIGITAL(currentUnit->channel[c].pin)) return EBADFD;
+        fromHostTo16LE(digitalRead(PIN_TO_DIGITAL(currentUnit->channel[c].pin)),buf + bufIndex);
       } else {
-        fromHostTo16LE(analogRead(currentUnit->channel[c].pin),buf + bufIndex);
+        if (!IS_PIN_ANALOG(currentUnit->channel[c].pin)) return EBADFD;
+        fromHostTo16LE(analogRead(PIN_TO_ANALOG(currentUnit->channel[c].pin)),buf + bufIndex);
       }
       bufIndex += 2;
     }
@@ -143,9 +145,11 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
       for (int c=0; c < numChannels; c++) {
         switch (currentUnit->channel[c].op) {
           case OP_DIGITAL:
+            if (!IS_PIN_DIGITAL(currentUnit->channel[c].pin)) return EINVAL;
             pinMode(currentUnit->channel[c].pin,currentUnit->channel[c].config);
             break;
           case OP_ANALOG:
+            if (!IS_PIN_ANALOG(currentUnit->channel[c].pin)) return EINVAL;
             pinMode(currentUnit->channel[c].pin,INPUT);
             break;
         }
@@ -154,9 +158,11 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
       for (int c=0; c < numChannels; c++) {
         switch (currentUnit->channel[c].op) {
           case OP_DIGITAL:
+            if (!IS_PIN_DIGITAL(currentUnit->channel[c].pin)) return EINVAL;
             pinMode(currentUnit->channel[c].pin,OUTPUT);
             break;
           case OP_ANALOG:
+            if (!IS_PIN_PWM(currentUnit->channel[c].pin)) return EINVAL;
             pinMode(currentUnit->channel[c].pin,OUTPUT);
             break;
           }
@@ -174,15 +180,16 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
       if (currentUnit->direction != OUTPUT) {
         return ENOTSUP;
       }
+
       if (count < 2*currentUnit->channelCount) return EMSGSIZE;
       numChannels = from8LEToHost(buf + bufIndex++);
       if (numChannels != currentUnit->channelCount) return EMSGSIZE;
 
       for (int c=0; c < currentUnit->channelCount; c++) {
         if (currentUnit->channel[c].op = OP_DIGITAL) {
-          digitalWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+          digitalWrite(PIN_TO_DIGITAL(currentUnit->channel[c].pin),from16LEToHost(buf + bufIndex));
         } else {
-          analogWrite(currentUnit->channel[c].pin,from16LEToHost(buf + bufIndex));
+          analogWrite(PIN_TO_PWM(currentUnit->channel[c].pin),from16LEToHost(buf + bufIndex));
         }
         bufIndex += 2;
       }
