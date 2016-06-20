@@ -72,7 +72,7 @@ int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
     if (currentUnit->direction != INPUT) {
       return ENOTSUP;
     }
-    if (count < 2*currentUnit->channelCount) return EMSGSIZE;
+    if (count < 1+(2*currentUnit->channelCount)) return EMSGSIZE;
 
     bufIndex = 0;
     fromHostTo8LE(currentUnit->channelCount,buf + bufIndex++);
@@ -150,8 +150,8 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
             pinMode(currentUnit->channel[c].digitalPin,currentUnit->channel[c].config);
             break;
           case OP_ANALOG:
-            if (!IS_PIN_ANALOG(currentUnit->channel[c].digitalPin)) return EAGAIN;
-            pinMode(currentUnit->channel[c].digitalPin,INPUT);
+            if (!IS_PIN_ANALOG(currentUnit->channel[c].digitalPin)) return EINVAL;
+            pinMode(currentUnit->channel[c].digitalPin,currentUnit->channel[c].config);
             break;
           default:
             return EBADR;
