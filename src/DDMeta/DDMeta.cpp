@@ -40,18 +40,21 @@ int DDMeta::open(int opts, int flags, const char *name) {
 //---------------------------------------------------------------------------
 
 int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
-  int status;
   byte versionBuffer[RESPONSE_BUFFER_SIZE];
 
-  // First, handle connection-optional requests
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
+
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
+
+  // Second, deal with "connection not required" requests.  (This DDMeta
+  // driver is privileged and is the only driver with the ability to reach
+  // into the global device table and formulate responses.)
 
   switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
 
   case (int)(REG::DRIVER_COUNT):
     if (count < 2) return EMSGSIZE;
@@ -73,7 +76,7 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
     return ESUCCESS;
 }
 
-  // Second, deal with connection-required requests
+  // Third, deal with connection-required requests
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
@@ -90,9 +93,6 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
 
   switch (reg) {
 
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
-
   case (int)(REG::AVG_INTERVALS):
     return readATI(handle, flags, reg, count, buf);
 
@@ -104,13 +104,16 @@ int DDMeta::read(int handle, int flags, int reg, int count, byte *buf) {
 int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
   int unitNameLength;
 
-  // First, handle connection-optional requests
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
-  switch (reg) {
-
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
 
-  // Second, deal with connection-required requests
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUMeta object associated with the lun.
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
@@ -118,9 +121,6 @@ int DDMeta::write(int handle, int flags, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   default:
     return ENOTSUP;

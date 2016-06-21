@@ -42,8 +42,10 @@ int DDSignal::open(int opts, int flags, const char *name) {
 int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
   int bufIndex;
 
-   // First, handle registers that can be processed by the DeviceDriver base
-   // class without knowing very much about our particular device type.
+  if (count < 0) return EINVAL;
+
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
   int status = DeviceDriver::read(handle, flags, reg, count, buf);
   if (status != ENOTSUP) {
@@ -67,6 +69,7 @@ int DDSignal::read(int handle, int flags, int reg, int count, byte *buf) {
   //  performed and there is an LUSignal object associated with the lun.
 
   switch (reg) {
+
   case (int)(REG::CHANNEL_VALUES):
     if (currentUnit->channelCount == 0) return ENODATA;
     if (currentUnit->direction != INPUT) {
@@ -99,8 +102,8 @@ int DDSignal::write(int handle, int flags, int reg, int count, byte *buf) {
   bool isNewLock;
   int c;
 
-   // First, handle registers that can be processed by the DeviceDriver base
-   // class without knowing very much about our particular device type.
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
   int status = DeviceDriver::write(handle, flags, reg, count, buf);
   if (status != ENOTSUP) {

@@ -64,37 +64,22 @@ int DDServo::open(int opts, int flags, const char *name) {
 
 int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
 
-   // First, handle registers that can be read even before a connection
-   // has been made. Note that currently the only source of handle-less
-   // connections is the Meta device driver.  All other clients must do
-   // an open() (ie, get a handle) before doing any reads or writes.
+  if (count < 0) return EINVAL;
 
-  switch (reg) {
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
-
-  //  Second, registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to be attached to a pin
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
-  if (count < 0) return EINVAL;
-
-  switch (reg) {
-
-    case (int)(CDR::Intervals):
-      return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
-  }
-
-  //  Third, registers for which we must have a handle (ie, open() has
+  //  Second, registers for which we must have a handle (ie, open() has
   //  been done) AND we need to be attached to a pin (and thus
   //  a servo)
 
@@ -137,16 +122,18 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
   int loPulse;
   int hiPulse;
   int pos;
-  int status;
   bool isNewLock;
 
-  // First, handle registers that can be written even before a connection
-  // has been made.
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
-  // ... No applicable registers ...
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
 
-  //  Second, handle registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to be attached to a pin
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUServo object associated with the lun.
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
@@ -154,9 +141,6 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::PIN):
     if (count != 2) return EMSGSIZE;
