@@ -6,6 +6,9 @@
 #include <Device/DeviceTable.h>
 #include "LUMCP9808.h"
 
+/**
+ * @ingroup DDImplementation
+ */
 class DDMCP9808: public DeviceDriver {
 
 public:

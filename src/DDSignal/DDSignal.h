@@ -9,6 +9,9 @@
 #define OP_ANALOG  0  // pin operating in analog mode
 #define OP_DIGITAL 1  // pin operating in digital mode
 
+/**
+ * @ingroup DDImplementation
+ */
 class DDSignal: public DeviceDriver {
 
 public:

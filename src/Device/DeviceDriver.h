@@ -1,6 +1,12 @@
 #ifndef DeviceDriver_h
 #define DeviceDriver_h
 
+/**
+ * @defgroup DDImplementation Device Driver Implementations
+ * @defgroup LuniFrame Luni Architecture Framework
+ *
+ */
+
 #include <arduino.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +22,13 @@
 class ClientReporter;
 class DeviceTable;
 
-class DeviceDriver {
+
+/**
+ * @ingroup LuniFrame, DDImplementation
+ * This DeviceDriver class is the base class for all the device drivers.  It
+ * implements common functions and provides a common API for all the drivers.
+ */
+ class DeviceDriver {
 
     friend class DeviceTable;       // in order to set deviceNumber
 

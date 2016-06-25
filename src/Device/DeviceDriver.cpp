@@ -164,7 +164,23 @@ int DeviceDriver::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 //---------------------------------------------------------------------------
-
+/**
+ * This DeviceDriver base class implementation of close() performs the final
+ * tasks of closing a logical unit, namely releasing the memory that was
+ * allocated for the logical unit info object by the subclass and zeroing out
+ * the pointer to it to indicate that the lun is now available again.
+ *
+ * Prior to calling this close() method, the device driver subclass should do
+ * any cleanup needed for the specific tasks that were done during the
+ * associated open.
+ *
+ * Note that this method is the one that releases the memory, even though the
+ * subclass open() is where it was allocated.
+ *
+ * @param  handle [description]
+ * @param  flags  [description]
+ * @return        [description]
+ */
 int DeviceDriver::close(int handle, int flags) {
 
   int lun = getUnitNumber(handle);

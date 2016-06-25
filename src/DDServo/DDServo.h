@@ -5,6 +5,9 @@
 #include <Device/DeviceTable.h>
 #include "LUServo.h"
 
+/**
+ * @ingroup DDImplementation
+ */
 class DDServo: public DeviceDriver {
 
 public:
