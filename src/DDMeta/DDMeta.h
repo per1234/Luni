@@ -5,6 +5,9 @@
 #include <Device/DeviceTable.h>
 #include "LUMeta.h"
 
+/**
+ * @ingroup DDImplementation
+ */
 class DDMeta: public DeviceDriver {
 
 public:

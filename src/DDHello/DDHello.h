@@ -10,6 +10,8 @@
 /**
  * This class defines a simple device driver as an example
  * HelloWorld component for device drivers and their usage.
+ *
+ * @ingroup DDImplementation
  */
 class DDHello: public DeviceDriver {
 

@@ -19,7 +19,7 @@ DDMCP9808::DDMCP9808(const char *dName, int lunCount, int baseI2CAddress) :
   DeviceDriver(dName, lunCount),
   baseAddress(baseI2CAddress),
   i2c() {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 10, 0)
 }
 
 //---------------------------------------------------------------------------
@@ -33,6 +33,9 @@ int DDMCP9808::open(int opts, int flags, const char *name) {
 
   lun = status;
   LUMCP9808 *currentUnit = new LUMCP9808(baseAddress + lun);
+  if (currentUnit == 0) {
+    return ENOMEM;
+  }
 
   int address = currentUnit->i2cAddress;
   int theRegister = (int)(REG::MANUF_ID);
@@ -61,38 +64,33 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
   if (count < 0) return EINVAL;
 
-  // First, handle connection-optional requests
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
 
-  switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
-
-  // Second, deal with connection-required requests
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
-  int address = currentUnit->i2cAddress;
-
-  // Take action regarding continuous read, if requested
+  // Enable continuous read, if requested
 
   if (flags == (int)DAF::MILLI_RUN) {
-    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count);
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count,buf);
   } else if (flags == (int)DAF::MILLI_STOP) {
-    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count);
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count,buf);
   }
 
-  switch (reg) {
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUSignal object associated with the lun.
 
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+  int address = currentUnit->i2cAddress;
+
+  switch (reg) {
 
   case (int)(CDR::Stream):
     if (count < 2) {
@@ -131,6 +129,17 @@ int DDMCP9808::read(int handle, int flags, int reg, int count, byte *buf) {
 
 int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
+
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
+
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUSignal object associated with the lun.
+
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
@@ -142,9 +151,6 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
   }
 
   switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::CONFIG):
   case (int)(REG::UPPER_TEMP):
@@ -174,6 +180,10 @@ int DDMCP9808::write(int handle, int flags, int reg, int count, byte *buf) {
 //---------------------------------------------------------------------------
 
 int DDMCP9808::close(int handle, int flags) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMCP9808 *currentUnit = static_cast<LUMCP9808 *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
   return DeviceDriver::close(handle, flags);
 }
 

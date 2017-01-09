@@ -1,48 +1,29 @@
-#include "DDServo.h"
+#include "DDMotor.h"
 
 //---------------------------------------------------------------------------
 
 extern DeviceTable *gDeviceTable;
 
 /**
- * This device driver is for servo controllers.  It uses the basic servo
- * library supplied with Arduino.
+ * This device driver is for plain DC motors and assumes some sort of motor
+ * control device is present.
  *
- * Information needed by the device driver about each attached servo is held in
- * an object of the LUServo class.  The LUServo class extends the Servo class
- * that the library itself uses for maintaining the detailed state of each
- * attached servo.
- *
- * Because the library uses up a slot index every time a Servo object is allocated,
- * and has no way to reclaim slot indexes no longer in use, this device driver
- * constructor allocates an LUServo object for every available lun and then just
- * points to them in the logicalUnits pointer array when needed for open() and
- * zeroes out the pointer for close().  (The more common method is to create and
- * free LUI objects as luns are opened and closed.)
- *
- * If the memory allocations fail, logicalUnitCount is set to 0 and all calls to
- * the open() method for this device will fail with ENXIO, No such device or address.
+ * Information needed by the device driver about each attached motor is held in
+ * an object of the LUMotor class.
  */
-DDServo::DDServo(const char *dName, int lunCount) :
+DDMotor::DDMotor(const char *dName, int lunCount) :
   DeviceDriver(dName, lunCount) {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 11, 0)
 
-  servos = 0;
-  if ((logicalUnitCount > 0) && (logicalUnitCount <= MAX_SERVOS)) {
-    servos = new LUServo[logicalUnitCount];
-  }
-  if (servos == 0) {            // not enough memory or bad lun count
-    delete logicalUnits;        // undo base class initialization
-    logicalUnitCount = 0;
-  }
-  for (int idx = 0; idx < logicalUnitCount; idx++) {
-    logicalUnits[idx] = 0;      // all luns are closed initially
+  motorCount = 0;
+  if ((logicalUnitCount > 0) && (logicalUnitCount <= MAX_MOTORS)) {
+    motorCount = constrain(logicalUnitCount,0,MAX_MOTORS);
   }
 }
 
 //---------------------------------------------------------------------------
 
-int DDServo::open(int opts, int flags, const char *name) {
+int DDMotor::open(int opts, int flags, const char *name) {
   int lun;
   int status = DeviceDriver::open(opts, flags, name);   // find an unused lun
   if (status < 0) {
@@ -50,7 +31,7 @@ int DDServo::open(int opts, int flags, const char *name) {
   }
 
   lun = status;
-  LUServo *currentUnit = &servos[lun]; // get pointer to the corresponding Servo object
+  LUMotor *currentUnit = &servos[lun]; // get pointer to the corresponding Motor object
 
   currentUnit->detach();
   currentUnit->minPulse = MIN_PULSE_WIDTH;
@@ -62,39 +43,24 @@ int DDServo::open(int opts, int flags, const char *name) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
-
-   // First, handle registers that can be read even before a connection
-   // has been made. Note that currently the only source of handle-less
-   // connections is the Meta device driver.  All other clients must do
-   // an open() (ie, get a handle) before doing any reads or writes.
-
-  switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
-  }
-
-  //  Second, registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to be attached to a pin
-
-  int lun = getUnitNumber(handle);
-  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
-  if (currentUnit == 0) return ENOTCONN;
+int DDMotor::read(int handle, int flags, int reg, int count, byte *buf) {
 
   if (count < 0) return EINVAL;
 
-  switch (reg) {
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
-    case (int)(CDR::Intervals):
-      return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
 
-  //  Third, registers for which we must have a handle (ie, open() has
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMotor *currentUnit = static_cast<LUMotor *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+
+  //  Second, registers for which we must have a handle (ie, open() has
   //  been done) AND we need to be attached to a pin (and thus
   //  a servo)
 
@@ -131,32 +97,31 @@ int DDServo::read(int handle, int flags, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
+int DDMotor::write(int handle, int flags, int reg, int count, byte *buf) {
   int thePin;
   uint8_t channel;
   int loPulse;
   int hiPulse;
   int pos;
-  int status;
   bool isNewLock;
 
-  // First, handle registers that can be written even before a connection
-  // has been made.
+  // First, handle registers that can be processed by the DeviceDriver base
+  // class without knowing very much about our particular device type.
 
-  // ... No applicable registers ...
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
 
-  //  Second, handle registers for which we must have a handle (ie, open() has
-  //  been done) but we don't need to be attached to a pin
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUMotor object associated with the lun.
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
+  LUMotor *currentUnit = static_cast<LUMotor *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
   switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
 
   case (int)(REG::PIN):
     if (count != 2) return EMSGSIZE;
@@ -228,9 +193,12 @@ int DDServo::write(int handle, int flags, int reg, int count, byte *buf) {
 
 //---------------------------------------------------------------------------
 
-int DDServo::close(int handle, int flags) {
+int DDMotor::close(int handle, int flags) {
   int lun = getUnitNumber(handle);
-  LUServo *currentUnit = static_cast<LUServo *>(logicalUnits[lun]);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUMotor *currentUnit = static_cast<LUMotor *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
+
   if (currentUnit->attached()) {
     currentUnit->detach();
     currentUnit->unlockPin(currentUnit->pin);
@@ -248,12 +216,12 @@ int DDServo::close(int handle, int flags) {
 // sweep between limits, but function tables or other interesting algorithms
 // would be easy to implement for servos and other devices.
 
-int DDServo::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
+int DDMotor::processTimerEvent(int lun, int timerSelector, ClientReporter *report) {
   int nextStep;
   int nextPulse;
   int status;
 
-  LUServo *cU = static_cast<LUServo *>(logicalUnits[getUnitNumber(lun)]);
+  LUMotor *cU = static_cast<LUMotor *>(logicalUnits[getUnitNumber(lun)]);
   if (cU == 0) return ENOTCONN;
 
   int h = cU->eventAction[1].handle;

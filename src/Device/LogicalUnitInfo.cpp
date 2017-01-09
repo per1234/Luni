@@ -20,16 +20,25 @@ extern DeviceTable *gDeviceTable;
 
 //----------------------------------------------------------------------------
 
-// return true if pin was idle, now it's ours
-// return false if pin was already in use by someone else
-
+/**
+ * Request exclusive use of a particular pin.
+ * @param  pin A full-range (digital) pin number.
+ * @return True if pin was idle, now it's ours.  Return false if pin
+ * was already in use by someone else and we can't have it.
+ */
 bool LogicalUnitInfo::lockPin(int pin) {
   return (gDeviceTable->claimPin(pin));
 }
 
-// return true if pin was ours, now it's not
-// return false if pin was not in use by anyone!
+// return t
+// return false
 
+/**
+ * Release all claim to exclusive use of a particular pin.
+ * @param  pin A full-range (digital) pin number.
+ * @return True if pin was ours, now it's not.  Return false if
+ * pin was not in use by anyone!
+ */
 bool LogicalUnitInfo::unlockPin(int pin) {
   return (gDeviceTable->releasePin(pin));
 }

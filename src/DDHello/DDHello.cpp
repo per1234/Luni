@@ -9,7 +9,7 @@ extern DeviceTable *gDeviceTable;
  * HelloWorld component for device drivers and their usage.
  */
 DDHello::DDHello(const char *dName, int count) : DeviceDriver(dName, count) {
-  DEFINE_VERSION_PRE(0, 9, 0, beta)
+  DEFINE_VERSION(0, 10, 0)
 }
 
 //---------------------------------------------------------------------------
@@ -23,6 +23,9 @@ int DDHello::open(int opts, int flags, const char *name) {
 
   lun = status;
   LUHello *currentUnit = new LUHello("World");
+  if (currentUnit == 0) {
+    return ENOMEM;
+  }
 
   // Any further validation of the current unit's appropriateness goes here ...
 
@@ -36,35 +39,29 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
 
   if (count < 0) return EINVAL;
 
-  // First, handle connection-optional requests
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
 
-  switch (reg) {
-
-  case (int)(CDR::DriverVersion):
-    return DeviceDriver::buildVersionResponse(count, buf);
-
-  case (int)(CDR::UnitNamePrefix):
-      return DeviceDriver::buildPrefixResponse(count,buf);
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::readIntervals(handle, flags, reg, count, buf);
-
- }
-
-  // Second, deal with connection-required requests
+  int status = DeviceDriver::read(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
+  }
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
   LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
   if (currentUnit == 0) return ENOTCONN;
 
-  // Take action regarding continuous read, if requested
+  // Enable continuous read, if requested
 
   if (flags == (int)DAF::MILLI_RUN) {
-    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count);
+    DeviceDriver::milliRateRun((int)DAC::READ, handle, flags, reg, count,buf);
   } else if (flags == (int)DAF::MILLI_STOP) {
-    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count);
+    DeviceDriver::milliRateStop((int)DAC::READ, handle, flags, reg, count,buf);
   }
+
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUHello object associated with the lun.
 
   switch (reg) {
 
@@ -95,16 +92,16 @@ int DDHello::read(int handle, int flags, int reg, int count, byte *buf) {
 
 int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 
-  // First, handle connection-optional requests
+   // First, handle registers that can be processed by the DeviceDriver base
+   // class without knowing very much about our particular device type.
 
-  switch (reg) {
-
-  case (int)(CDR::Intervals):
-    return DeviceDriver::writeIntervals(handle, flags, reg, count, buf);
-
+  int status = DeviceDriver::write(handle, flags, reg, count, buf);
+  if (status != ENOTSUP) {
+    return status;
   }
 
-  // Second, deal with connection-required requests
+  //  Second, handle registers that can only be processed if an open has been
+  //  performed and there is an LUSignal object associated with the lun.
 
   int lun = getUnitNumber(handle);
   if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
@@ -128,6 +125,10 @@ int DDHello::write(int handle, int flags, int reg, int count, byte *buf) {
 }
 
 int DDHello::close(int handle, int flags) {
+  int lun = getUnitNumber(handle);
+  if (lun < 0 || lun >= logicalUnitCount) return EINVAL;
+  LUHello *currentUnit = static_cast<LUHello *>(logicalUnits[lun]);
+  if (currentUnit == 0) return ENOTCONN;
   return DeviceDriver::close(handle, flags);
 }
 
