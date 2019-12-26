@@ -1,7 +1,7 @@
 #ifndef DeviceDriver_h
 #define DeviceDriver_h
 
-#include <arduino.h>
+#include <Arduino.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
